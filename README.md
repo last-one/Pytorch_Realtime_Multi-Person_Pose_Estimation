@@ -2,6 +2,13 @@
 
 This is a pytroch version of Realtime Multi-Person Pose Estimation, origin code is here https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation
 
+## Introduction
+
+Code for reproducing CVPR 2017 Oral paper using pytorch
+
+## Require
+Pytorch](http://pytorch.org/)
+
 ## Citation
 Please cite the paper in your publocations if it helps your research:
 	
