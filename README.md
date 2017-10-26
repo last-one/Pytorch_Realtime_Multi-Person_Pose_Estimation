@@ -2,7 +2,7 @@
 
 This is a pytroch version of Realtime Multi-Person Pose Estimation, origin code is here https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation
 
-##Citation
+## Citation
 Please cite the paper in your publocations if it helps your research:
 	
 	@inProceedings{cao2017realtime,
