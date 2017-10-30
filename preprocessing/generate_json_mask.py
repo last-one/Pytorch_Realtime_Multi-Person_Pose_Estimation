@@ -43,9 +43,6 @@ for i, img_id in enumerate(ids):
         if flag == 1:
             continue
         dic['objpos'] = person_center
-        dic['bbox'] = img_anns[p]['bbox']
-        dic['segment_area'] = img_anns[p]['area']
-        dic['num_keypoints'] = img_anns[p]['num_keypoints']
         dic['keypoints'] = np.zeros((17, 3))
         for part in range(17):
             dic['keypoints'][part][0] = kpt[part * 3]
