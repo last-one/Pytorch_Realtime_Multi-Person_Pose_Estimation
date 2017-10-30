@@ -48,7 +48,7 @@ def generate_heatmap(heat, kpts, num_point, sigma):
 
     for h in range(height):
         for w in range(width):
-            for i in range(num_point):
+            for i in range(1, num_point):
                 if kpts[3 * i + 2] <= 1:
                     continue
                 x = kpts[3 * i]
@@ -62,32 +62,48 @@ def generate_heatmap(heat, kpts, num_point, sigma):
 
 class GenerateData(object):
 
-    def __init__(self, json_file, mask_path, num_point, save_path):
+    def __init__(self, json_file, img_path, mask_path, num_point, save_path):
 
         self.img_list, self.kpt_list  = read_file(json_file)
+        self.img_path = img_path
         self.mask_path = mask_path
         self.num_point = num_point
+        self.save_path = save_path
         self.sigma = 7.0
 
     def _generate(self):
 
-        for info in zip(self.img_list, self.mask_path, self.kpt_list):
+        cnt = 0
+        length = len(self.img_list)
+        assert len(self.img_list) == len(self.kpt_list)
+
+        for info in zip(self.img_list, self.kpt_list):
             name = info[0].split('/')[-1].split('.')[0]
 
-            img = cv2.imread(info[0])
+            img = np.array(cv2.imread(os.path.join(self.img_path, info[0])))
             img = img[:,:,::-1]
             img.dtype=np.float32
 
             height, width, _ = img.shape
-            mask = read_mask(info[1]).reshape((height, width, 1))
+            mask = read_mask(os.path.join(self.mask_path, name + '.npy')).reshape((height, width, 1))
             mask.dtype=np.float32
 
-            kpts = info[2]
-            heat = np.zeros((height, width, self.num_point + 1), dtype=np.float32)
+            kpts = info[1]
+            heat = np.zeros((height, width, self.num_point), dtype=np.float32)
             for kpt in kpts:
                 generate_heatmap(heat, kpt, self.num_point, self.sigma)
 
-            heat[:,:,self.num_point] = np.max(heat[:,:,:self.num_point], axis=2)
+            heat[:,:,0] = 1.0 - np.max(heat[:,:,1:self.num_point], axis=2)
 
             img_labels = np.concatenate((img, mask, heat), axis=2)
-            np.save(os.path.joint(save_path, name), img_labels)
+            np.save(os.path.joint(self.save_path, name), img_labels)
+            cnt += 1
+            if cnt % 1000 == 0:
+                print "Processed {} of {}".format(cnt, length)
+            if cnt == 20:
+                break
+
+if __name__ == '__main__':
+
+    gen = GenerateData('/home/hypan/data/coco/json/train2014.json', '/home/hypan/data/coco/train2014', '/home/hypan/data/coco/mask/train2014', 19, '/home/hypan/data/coco/train_data/train2014')
+    gen._generate()

@@ -1,7 +1,11 @@
 import os
 import sys
+import math
+import json
+import numpy as np
 from pycocotools.coco import COCO
 
+COCO_TO_OURS = [0, 15, 14, 17, 16, 5, 2, 6, 3, 7, 4, 11, 8, 12, 9, 13, 10]
 ann_path = sys.argv[1]
 json_dir = sys.argv[2]
 mask_dir = sys.argv[3]
@@ -31,6 +35,7 @@ for i, img_id in enumerate(ids):
         kpt = img_anns[p]['keypoints']
         dic = dict()
 
+        # person center
         person_center = [img_anns[p]['bbox'][0] + img_anns[p]['bbox'][2] / 2.0, img_anns[p]['bbox'][1] + img_anns[p]['bbox'][3] / 2.0]
 
         # skip this person if the distance to exiting person is too small
@@ -43,10 +48,11 @@ for i, img_id in enumerate(ids):
         if flag == 1:
             continue
         dic['objpos'] = person_center
-        dic['keypoints'] = np.zeros((17, 3))
+        dic['keypoints'] = np.zeros((17, 3)).tolist()
         for part in range(17):
             dic['keypoints'][part][0] = kpt[part * 3]
             dic['keypoints'][part][1] = kpt[part * 3 + 1]
+            # visiable is 1, unvisiable is 0 and not labeled is 2
             if kpt[part * 3 + 2] == 2:
                 dic['keypoints'][part][2] = 1
             elif kpt[part * 3 + 2] == 1:
@@ -57,16 +63,28 @@ for i, img_id in enumerate(ids):
         persons.append(dic)
         person_centers.append(np.append(person_center, max(img_anns[p]['bbox'][2], img_anns[p]['bbox'][3])))
 
-    if len(person) > 0:
+    if len(persons) > 0:
         fp.write(name + '\n')
         info = dict()
         info['filename'] = name
         info['info'] = []
         cnt = 1
-        for k in person:
+        for person in persons:
             dic = dict()
-            dic['pos'] = person[k]['objpos']
-            dic['keypoints'] = person[k]['keypoints']
+            dic['pos'] = person['objpos']
+            dic['keypoints'] = np.zeros((18,3)).tolist()
+            for i in range(17):
+                dic['keypoints'][COCO_TO_OURS[i]][0] = person['keypoints'][i][0]
+                dic['keypoints'][COCO_TO_OURS[i]][1] = person['keypoints'][i][1]
+                dic['keypoints'][COCO_TO_OURS[i]][2] = person['keypoints'][i][2]
+            dic['keypoints'][1][0] = (person['keypoints'][5][0] + person['keypoints'][6][0]) * 0.5
+            dic['keypoints'][1][1] = (person['keypoints'][5][1] + person['keypoints'][6][1]) * 0.5
+            if person['keypoints'][5][2] == person['keypoints'][6][2]:
+                dic['keypoints'][1][2] = person['keypoints'][5][2]
+            elif person['keypoints'][5][2] == 2 or person['keypoints'][6][2] == 2:
+                dic['keypoints'][1][2] = 2
+            else:
+                dic['keypoints'][1][2] = 0
             info['info'].append(dic)
         lists.append(info)
         

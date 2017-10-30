@@ -4,7 +4,7 @@ These scripts are used to deal with COCO dataset and generate the data for trani
 
 [generate_json_mask.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing/generate_json_mask.py): to generate the json file and mask.
 
-It need three arguments: the path of COCO's annotation, the savepath for json file and mask.
+It need four arguments: the path of COCO's annotation, the savepath for json file, mask and filelist.
 
 Json file is used to save filename, person_center and keypoints. It's format as follow:
 ```
