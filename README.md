@@ -6,6 +6,10 @@ This is a pytroch version of Realtime Multi-Person Pose Estimation, origin code 
 
 Code for reproducing CVPR 2017 Oral paper using pytorch
 
+preprocessing is to process data for training.
+
+training is some training scripts.
+
 ## Require
 [Pytorch](http://pytorch.org/)
 
