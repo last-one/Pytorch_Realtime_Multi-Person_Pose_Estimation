@@ -129,6 +129,25 @@ def crop(img, heatmap, mask, kpt, center, i, j, h, w):
 
     return img[i: i + h, j: j + w,:], heatmap[i: i + h, j: j + w, :], mask[i: i + h, j: j + w, :], kpt, center
 
+def resized_crop(img, heatmap, mask, kpt, center, i, j, h, w, size):
+    """Crop the given np.ndarray and resize it to desired size.
+
+    Notably used in RandomResizedCrop.
+
+    Args:
+        img (PIL.Image): Image to be cropped.
+        i: Upper pixel coordinate.
+        j: Left pixel coordinate.
+        h: Height of the cropped image.
+        w: Width of the cropped image.
+        size (sequence or int): Desired output size. Same semantics as ``scale``.
+    Returns:
+        PIL.Image: Cropped image.
+    """
+    img, heatmap, mask, kpt, center = crop(img, heatmap, mask, kpt, center, i, j, h, w)
+    img, heatmap, mask, kpt, center = resize(img, heatmap, mask, kpt, center, size)
+    return img, heatmap, mask, kpt, center
+
 def hflip(img, heatmap, mask, kpt, center):
 
     img = img[:, ::-1, :]
@@ -160,19 +179,85 @@ def hflip(img, heatmap, mask, kpt, center):
 
     return img, heatmap, mask, kpt, center
 
+class RandomResizedCrop(object):
+    """Crop the given PIL.Image to random size and aspect ratio.
+
+    A crop of random size of (0.5 to 1.0) of the original size and a random
+    aspect ratio of 3/4 to 4/3 of the original aspect ratio is made. This crop
+    is finally resized to given size.
+    This is popularly used to train the Inception networks.
+
+    Args:
+        size: expected output size of each edge
+        interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, size, center_perterb_max):
+        self.size = (size, size)
+        self.center_perterb_max = center_perterb_max
+
+    @staticmethod
+    def get_params(img, center):
+        """Get parameters for ``crop`` for a random sized crop.
+
+        Args:
+            img (PIL.Image): Image to be cropped.
+
+        Returns:
+            tuple: params (i, j, h, w) to be passed to ``crop`` for a random
+                sized crop.
+        """
+        height, width, _ = img.shape
+        for attempt in range(10):
+            area = img.size[0] * img.size[1]
+            target_area = random.uniform(0.5, 1.0) * area
+            aspect_ratio = random.uniform(3. / 4, 4. / 3)
+
+            w = int(round(math.sqrt(target_area * aspect_ratio)))
+            h = int(round(math.sqrt(target_area / aspect_ratio)))
+
+            if random.random() < 0.5:
+                w, h = h, w
+
+            if w <= width and h <= height:
+                ratio_x = random.uniform(0, 1)
+                ratio_y = random.uniform(0, 1)
+                x_offset = int((ratio_x - 0.5) * 2 * self.center_perterb_max)
+                y_offset = int((ratio_y - 0.5) * 2 * self.center_perterb_max)
+                centerx = min(max(center[0] + x_offset - w / 2, w / 2), width - w / 2)
+                centery = min(max(center[1] + y_offset - h / 2, h / 2), height - h / 2)
+                
+                return centery - h / 2, centerx - w / 2, h, w
+
+        # Fallback
+        w = min(img.size[0], img.size[1])
+        i = (img.size[1] - w) // 2
+        j = (img.size[0] - w) // 2
+        return i, j, w, w
+
+    def __call__(self, img, heatmap, mask, kpt, center):
+        """
+        Args:
+            img (PIL.Image): Image to be flipped.
+
+        Returns:
+            PIL.Image: Randomly cropped and resize image.
+        """
+        i, j, h, w = self.get_params(img)
+        return resized_crop(img, heatmap, mask, kpt, center, i, j, h, w, self.size)
+
 class Resize(object):
     """Resize the input np.ndarray and list to the given size.
 
     Args:
-        size (sequence or int): Desired output size. If size is a sequence like
-            (h, w), output size will be matched to this. If size is an int,
+        size (int): Desired output size. The size is an int,
             smaller edge of the image will be matched to this number.
             i.e, if height > width, then image will be rescaled to
             (size * height / width, size)
     """
 
     def __init__(self, size):
-        assert isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)
+        assert isinstance(size, int)
         self.size = size
 
     def __call__(self, img, heatmap, mask, kpt, center):
