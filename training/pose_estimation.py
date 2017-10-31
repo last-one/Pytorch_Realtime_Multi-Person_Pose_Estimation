@@ -86,41 +86,41 @@ class Pose_Estimation(nn.Module):
         out1_1 = self.model1_1(out0)
         out1_2 = self.model1_2(out0)
         out1 = torch.cat([out1_1, out1_2, out0], 1)
-        out1_1_mask = out1_1 * mask_vec
-        out1_2_mask = out1_2 * mask_heat
+        out1_vec_mask = out1_1 * mask_vec
+        out1_heat_mask = out1_2 * mask_heat
 
         out2_1 = self.model2_1(out1)
         out2_2 = self.model2_2(out1)
         out2 = torch.cat([out2_1, out2_2, out0], 1)
-        out2_1_mask = out2_1 * mask_vec
-        out2_2_mask = out2_2 * mask_heat
+        out2_vec_mask = out2_1 * mask_vec
+        out2_heat_mask = out2_2 * mask_heat
 
         out3_1 = self.model3_1(out2)
         out3_2 = self.model3_2(out2)
         out3 = torch.cat([out3_1, out3_2, out0], 1)
-        out3_1_mask = out3_1 * mask_vec
-        out3_2_mask = out3_2 * mask_heat
+        out3_vec_mask = out3_1 * mask_vec
+        out3_heat_mask = out3_2 * mask_heat
 
         out4_1 = self.model4_1(out3)
         out4_2 = self.model4_2(out3)
         out4 = torch.cat([out4_1, out4_2, out0], 1)
-        out4_1_mask = out4_1 * mask_vec
-        out4_2_mask = out4_2 * mask_heat
+        out4_vec_mask = out4_1 * mask_vec
+        out4_heat_mask = out4_2 * mask_heat
 
         out5_1 = self.model5_1(out4)
         out5_2 = self.model5_2(out4)
         out5 = torch.cat([out5_1, out5_2, out0], 1)
-        out5_1_mask = out5_1 * mask_vec
-        out5_2_mask = out5_2 * mask_heat
+        out5_vec_mask = out5_1 * mask_vec
+        out5_heat_mask = out5_2 * mask_heat
 
         out6_1 = self.model6_1(out5)
         out6_2 = self.model6_2(out5)
-        out6_1_mask = out6_1 * mask_vec
-        out6_2_mask = out6_2 * mask_heat
+        out6_vec_mask = out6_1 * mask_vec
+        out6_heat_mask = out6_2 * mask_heat
 
-        return out1_1_mask, out1_2_mask, out2_1_mask, out2_2_mask, out3_1_mask, out3_2_mask, out4_1_mask, out4_2_mask, out5_1_mask, out5_2_mask, out6_1_mask, out6_2_mask
+        return out1_vec_mask, out1_heat_mask, out2_vec_mask, out2_heat_mask, out3_vec_mask, out3_heat_mask, out4_vec_mask, out4_heat_mask, out5_vec_mask, out5_heat_mask, out6_vec_mask, out6_heat_mask
 
-def PoseModel(num_points, num_stages=6, batch_norm=False, pretrained=False):
+def PoseModel(num_point, num_vector, num_stages=6, batch_norm=False, pretrained=False):
 
     net_dict = []
     block0 = [{'conv1_1': [3, 64, 3, 1, 1]}, {'conv1_2': [64, 64, 3, 1, 1]}, {'pool1': [2, 2, 0]},
@@ -130,8 +130,8 @@ def PoseModel(num_points, num_stages=6, batch_norm=False, pretrained=False):
     net_dict.append(block0)
 
     block1 = [[], []]
-    in_vec = [0, 128, 128, 128, 128, 512, num_points * 2]
-    in_heat = [0, 128, 128, 128, 128, 512, num_points]
+    in_vec = [0, 128, 128, 128, 128, 512, num_vector * 2]
+    in_heat = [0, 128, 128, 128, 128, 512, num_point]
     for i in range(1, 6):
         if i < 4:
             block1[0].append({'conv{}_stage1_vec'.format(1) :[in_vec[i], in_vec[i + 1], 3, 1, 1]})
@@ -141,8 +141,8 @@ def PoseModel(num_points, num_stages=6, batch_norm=False, pretrained=False):
             block1[1].append({'conv{}_stage1_heat'.format(1):[in_heat[i], in_heat[i + 1], 1, 1, 0]})
     net_dict.append(block1)
 
-    in_vec_1 = [0, 128 + num_points * 3, 128, 128, 128, 128, 128, 128, num_points * 2]
-    in_heat_1 = [0, 128 + num_points * 3, 128, 128, 128, 128, 128, 128, num_points]
+    in_vec_1 = [0, 128 + num_point + num_vector * 2, 128, 128, 128, 128, 128, 128, num_vector * 2]
+    in_heat_1 = [0, 128 + num_point + num_vector * 2, 128, 128, 128, 128, 128, 128, num_point]
     for j in range(2, num_stages + 1):
         blocks = [[], []]
         for i in range(1, 8):

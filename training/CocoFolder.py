@@ -81,12 +81,12 @@ def generate_vector(vector, cnt, kpts, vec_pair, theta):
 
 class CocoFolder(data.Dataset):
 
-    def __init__(self, file_dir, num_points, stride, transformer=None):
+    def __init__(self, file_dir, stride, transformer=None):
 
         self.info_list = read_data_file(file_dir[0])
         self.kpt_list, self.center_list = read_json_file(file_dir[1])
         self.stride = stride
-        self.num_points = num_points
+        # self.num_points = num_points
         self.transformer = transformer
         self.vec_pair = [[2,3,5,6,8,9,11,12,0,1,1,1,1,2,5,0,0,15,14],[3,4,6,7,9,10,12,13,1,8,11,2,5,16,17,15,14,16,17]] # different from openpose
         self.theta = 1.0
