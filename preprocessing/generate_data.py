@@ -6,11 +6,11 @@ import math
 
 """num_point: the number of key_points
    
-   A image is organised as a np.ndarray: [h, w, (3 + 1 + (num_point + 1) )], 
+   A image is organised as a np.ndarray: [h, w, (3 + 1 + (1 + num_point) )], 
    
    3 is the channel of image, 1 is the channel of mask_miss,
    
-   (num_point + 1) is the number of key_ponts and background.
+   (1 + num_point) is the number of background and key_ponts.
 
    the result includes img, mask and heatmap. Because the rotation will change the part affinity field vector, the vector has to be generated online.
 
@@ -95,7 +95,7 @@ class GenerateData(object):
             heat[:,:,0] = 1.0 - np.max(heat[:,:,1:self.num_point], axis=2)
 
             img_labels = np.concatenate((img, mask, heat), axis=2)
-            np.savez_compressed(os.path.join(self.save_path, name), img_labels)
+            np.savez_compressed(os.path.join(self.save_path, name), data=img_labels)
             cnt += 1
             if cnt % 1000 == 0:
                 print "Processed {} of {}".format(cnt, length)
