@@ -6,13 +6,18 @@ This is a pytroch version of Realtime Multi-Person Pose Estimation, origin code 
 
 Code for reproducing CVPR 2017 Oral paper using pytorch
 
-preprocessing is to process data for training.
-
-training is some training scripts.
+## Contents
+1.[preprocessing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing)
+2.[training](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training)
 
 ## Require
 [Pytorch](http://pytorch.org/)
 
+## Training steps
+- Download the data set, annotations and [COCO official toolbox](https://github.com/cocodataset/cocoapi)
+- Generate json file and masks `python generate_json_mask,py`
+- Generate training data `python generate_data.py`
+- Train the model `sh train.sh`
 ## Citation
 Please cite the paper in your publocations if it helps your research:
 	
