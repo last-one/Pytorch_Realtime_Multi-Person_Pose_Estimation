@@ -13,6 +13,31 @@ Json file is used to save filename, person_center and keypoints. It's format as 
 ...
 {"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [], "keypoints": []}]}]
 ```
+The body part order of the COCO (17 given part and 1 calculated part (neck)) keypoints as follow:
+
+```
+POSE_COCO_BODY_PARTS {
+	{0,  "background"},
+	{1,  "nose"},
+	{2,  "neck"},
+	{3,  "Rshoulder"},
+	{4,  "Relbow"},
+	{5,  "Rwrist"},
+	{6,  "Lshoulder"},
+	{7,  "Lelbow"},
+	{8,  "Lwrist"},
+	{9,  "Rhip"},
+	{10, "Rknee"},
+	{11, "Rankle"},
+	{12, "Lhip"},
+	{13, "Lknee"},
+	{14, "Lankle"},
+	{15, "Reye"},
+	{16, "Leye"},
+	{17, "Rear"},
+	{18, "Lear"},
+}
+```
 
 Mask is used as weight for heatmap and vectors. It's a binary mask. When the annotation is missing at an image location, it's zero, otherwise, is one.
 
