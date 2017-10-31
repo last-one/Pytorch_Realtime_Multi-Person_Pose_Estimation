@@ -1,0 +1,51 @@
+workers: 6
+weight_decay: 0.0001
+momentum: 0.9
+display: 50
+max_iter: 50000
+batch_size: 120
+test_interval: 1000
+topk: 3
+base_lr: 0.01
+start_iters: 0
+best_model: 12345678
+#-------------lr_policy--------------------#
+# step
+#lr_policy: 'step'
+#policy_parameter:
+  #gamma: 0.1
+  #step_size: 30000
+# exp
+# lr_policy: 'exp'
+# policy_parameter:
+#   gamma: 0.99
+# 
+# inv
+# lr_policy: 'inv'
+# policy_parameter:
+#   gamma: 0.1
+#   power: 0.1
+# 
+# multistep
+#lr_policy: 'multistep'
+#policy_parameter:
+  #stepvalue: [20000, 35000, 45000]
+  #gamma: 0.1
+# 
+# poly
+#lr_policy: 'poly'
+#policy_parameter:
+  #power: 1.5
+  #max_iter: 250000
+# 
+# sigmoid
+# lr_policy: 'sigmoid'
+# policy_parameter:
+#   gamma: 0.9
+#   stepsize: 5000
+lr_policy: 'multistep-poly'
+policy_parameter:
+  stepvalue: [15000, 30000, 40000]
+  max_iter: 30000
+  gamma: 0.1
+  power: 1.5
