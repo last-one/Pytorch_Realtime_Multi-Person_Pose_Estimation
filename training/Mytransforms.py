@@ -11,8 +11,6 @@ import cv2
 
 def normalize(tensor, mean, std):
 
-    if not in _is_tensor_image(tensor):
-        raise TypeError('tensor is not a torch image.')
     for t, m, s in zip(tensor, mean, std):
         t.sub_(m).div_(s)
     return tensor
@@ -28,23 +26,19 @@ def to_tensor(pic):
     Returns:
         Tensor: Converted image.
     """
-    if _is_numpy_image(pic)):
-        raise TypeError('pic should be ndarray. Got {}'.format(type(pic)))
 
     img = torch.from_numpy(pic.transpose((2, 0, 1)))
 
     return img.float()
 
-def resize(img, heatmpa, mask, kpt, center, size):
+def resize(img, heatmap, mask, kpt, center, size):
 
     if not (isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)):
         raise TypeError('Got inappropriate size arg: {}'.format(size))
-    if isinstance(img, np.ndarray)) and isinstance(heatmap, np.ndarray)) and isinstance(mask, np.ndarray)):
-        raise TypeError('img, heatmap and mask should be numpy.ndarray. Got {} {} {}'.format(type(img), type(heatmap), type(mask)))
-
+    
+    h, w, _ = img.shape
     if isinstance(size, int):
-        h, w, _ = img.shape
-        if (w <= h and w == size) or(h <= w and h == size):
+        if (w <= h and w == size) or (h <= w and h == size):
             return img, heatmap, mask, kpt, center
         if w < h:
             ow = size
@@ -58,12 +52,12 @@ def resize(img, heatmpa, mask, kpt, center, size):
         num = len(kpt)
         length = len(kpt[0])
         for i in range(num):
-            for j in range(length)
+            for j in range(length):
                 kpt[i][j][0] *= w_scale
                 kpt[i][j][1] *= h_scale
             center[i][0] *= w_scale
             center[i][1] *= h_scale
-        return cv2.resize(img, (ow, oh)), cv2.resize(heatmap, (ow, oh)), cv2.resize(mask, (ow, oh)), kpt, center
+        return np.ascontiguousarray(cv2.resize(img, (ow, oh))), np.ascontiguousarray(cv2.resize(heatmap, (ow, oh))), np.ascontiguousarray(cv2.resize(mask, (ow, oh))), kpt, center
 
     else:
         w_scale = size[0] / w
@@ -76,20 +70,22 @@ def resize(img, heatmpa, mask, kpt, center, size):
                 kpt[i][j][1] *= h_scale
             center[i][0] *= w_scale
             center[i][1] *= h_scale
-        return cv2.resize(img, (size[0], size[1])), cv2.resize(heatmap, (size[0], size[1])), cv2.resize(mask, (size[0], size[1])), kpt, center
+        return np.ascontiguousarray(cv2.resize(img, (size[0], size[1]))), np.ascontiguousarray(cv2.resize(heatmap, (size[0], size[1]))), np.ascontiguousarray(cv2.resize(mask, (size[0], size[1])).reshape((size[1], size[0], 1))), kpt, center
 
 def rotate(img, heatmap, mask, kpt, center, degree):
 
-    height, width, _ = img.shape
+    height, width, _ = heatmap.shape
     
-    center = (width / 2.0 , height / 2.0)
+    img_center = (width / 2.0 , height / 2.0)
     
-    rotateMat = cv2.getRotationMatrix2D(center, degree, 1.0)
-    
+    rotateMat = cv2.getRotationMatrix2D(img_center, degree, 1.0)
     img = cv2.warpAffine(img, rotateMat, (width, height), borderValue=(128, 128, 128, 128))
-    heatmap = cv2.warpAffine(heatmap, rotateMat, (width, height), borderValue=(0, 0, 0, 0))
+    new_heatmap = np.zeros((height, width, _), dtype=np.float32)
+    for i in range(_):
+        new_heatmap[:,:,i] = cv2.warpAffine(heatmap[:,:,i], rotateMat, (width, height))
     mask = cv2.warpAffine(mask, rotateMat, (width, height), borderValue=(1, 1, 1, 1))
-    
+    mask = mask.reshape((height, width, 1))
+
     num = len(kpt)
     length = len(kpt[0])
     for i in range(num):
@@ -108,26 +104,23 @@ def rotate(img, heatmap, mask, kpt, center, degree):
         center[i][0] = p[0]
         center[i][1] = p[1]
 
-   return img, heatmap, mask, kpt, center
+    return np.ascontiguousarray(img), np.ascontiguousarray(new_heatmap), np.ascontiguousarray(mask), kpt, center
 
 def crop(img, heatmap, mask, kpt, center, i, j, h, w):
-
-    if isinstance(img, np.ndarray) and isinstance(heatmap, np.ndarray) and isinstance(mask, np.ndarray)
-        raise TypeError('img should be numpy.ndarray. Got {} {} {}'.format(type(img), type(heatmap), type(mask)))
 
     num = len(kpt)
     length = len(kpt[0])
 
     for x in range(num):
         for y in range(length):
-            kpt[i][j][0] -= j
-            kpt[i][j][1] -= i
-            if kpt[i][j][0] < 0 or kpt[i][j][0] >= w or kpt[i][j][1] < 0 or kpt[i][j][1] >= h:
-                kpt[i][j][2] = 2
-        center[i][0] -= j
-        center[i][1] -= i
+            kpt[x][y][0] -= j
+            kpt[x][y][1] -= i
+            if kpt[x][y][0] < 0 or kpt[x][y][0] >= w or kpt[x][y][1] < 0 or kpt[x][y][1] >= h:
+                kpt[x][y][2] = 2
+        center[x][0] -= j
+        center[x][1] -= i
 
-    return img[i: i + h, j: j + w,:], heatmap[i: i + h, j: j + w, :], mask[i: i + h, j: j + w, :], kpt, center
+    return np.ascontiguousarray(img[i: i + h, j: j + w,:]), np.ascontiguousarray(heatmap[i: i + h, j: j + w, :]), np.ascontiguousarray(mask[i: i + h, j: j + w, :]), kpt, center
 
 def resized_crop(img, heatmap, mask, kpt, center, i, j, h, w, size):
     """Crop the given np.ndarray and resize it to desired size.
@@ -177,7 +170,7 @@ def hflip(img, heatmap, mask, kpt, center):
             kpt[i][x[0] - 1] = kpt[i][x[1] - 1]
             kpt[i][x[1] - 1] = temp_point
 
-    return img, heatmap, mask, kpt, center
+    return np.ascontiguousarray(img), np.ascontiguousarray(heatmap), np.ascontiguousarray(mask), kpt, center
 
 class RandomResizedCrop(object):
     """Crop the given PIL.Image to random size and aspect ratio.
@@ -192,12 +185,12 @@ class RandomResizedCrop(object):
         interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, size, center_perterb_max):
+    def __init__(self, size, center_perterb_max=40):
         self.size = (size, size)
         self.center_perterb_max = center_perterb_max
 
     @staticmethod
-    def get_params(img, center):
+    def get_params(img, center, center_perterb_max):
         """Get parameters for ``crop`` for a random sized crop.
 
         Args:
@@ -208,8 +201,9 @@ class RandomResizedCrop(object):
                 sized crop.
         """
         height, width, _ = img.shape
+        center_perterb_max = min(center_perterb_max, min(width, height) * 0.1)
         for attempt in range(10):
-            area = img.size[0] * img.size[1]
+            area = width * height
             target_area = random.uniform(0.5, 1.0) * area
             aspect_ratio = random.uniform(3. / 4, 4. / 3)
 
@@ -222,15 +216,15 @@ class RandomResizedCrop(object):
             if w <= width and h <= height:
                 ratio_x = random.uniform(0, 1)
                 ratio_y = random.uniform(0, 1)
-                x_offset = int((ratio_x - 0.5) * 2 * self.center_perterb_max)
-                y_offset = int((ratio_y - 0.5) * 2 * self.center_perterb_max)
-                centerx = min(max(center[0] + x_offset - w / 2, w / 2), width - w / 2)
-                centery = min(max(center[1] + y_offset - h / 2, h / 2), height - h / 2)
+                x_offset = int((ratio_x - 0.5) * 2 * center_perterb_max)
+                y_offset = int((ratio_y - 0.5) * 2 * center_perterb_max)
+                centerx = min(max(center[0][0] + x_offset - w / 2, w / 2), width - w / 2)
+                centery = min(max(center[0][1] + y_offset - h / 2, h / 2), height - h / 2)
                 
-                return centery - h / 2, centerx - w / 2, h, w
+                return int(round(centery - h / 2)), int(round(centerx - w / 2)), h, w
 
         # Fallback
-        w = min(img.size[0], img.size[1])
+        w = min(width, height)
         i = (img.size[1] - w) // 2
         j = (img.size[0] - w) // 2
         return i, j, w, w
@@ -243,7 +237,7 @@ class RandomResizedCrop(object):
         Returns:
             PIL.Image: Randomly cropped and resize image.
         """
-        i, j, h, w = self.get_params(img)
+        i, j, h, w = self.get_params(img, center, self.center_perterb_max)
         return resized_crop(img, heatmap, mask, kpt, center, i, j, h, w, self.size)
 
 class Resize(object):
@@ -280,11 +274,11 @@ class RandomRotate(object):
     """
 
     def __init__(self, max_degree):
-        assert isinstance(degree, numbers.Number)
+        assert isinstance(max_degree, numbers.Number)
         self.max_degree = max_degree
 
     @staticmethod
-    def get_params():
+    def get_params(max_degree):
         """Get parameters for ``rotate`` for a random rotate.
 
         Returns:
@@ -306,8 +300,7 @@ class RandomRotate(object):
             numpy.ndarray: Rotated image.
             list: Rotated key points.
         """
-        
-        degree = self.get_params()
+        degree = self.get_params(self.max_degree)
 
         return rotate(img, heatmap, mask, kpt, center, degree)
 
@@ -403,11 +396,15 @@ class CenterCrop(object):
         return crop(img, heatmap, mask, kpt, center, i, j, h, w)
 
 class RandomHorizontalFlip(object):
-    """Rotate the input np.ndarray and points to the given degree.
+    """Random horizontal flip the image.
 
     Args:
-        degree (number): Desired rotate degree.
+        prob (number): the probability to flip.
     """
+    
+    def __init__(self, prob=0.5):
+        self.prob = prob
+        
     def __call__(self, img, heatmap, mask, kpt, center):
         """
         Args:
@@ -418,7 +415,7 @@ class RandomHorizontalFlip(object):
             numpy.ndarray: Randomly flipped image.
             list: Randomly flipped points.
         """
-        if random.random() < 0.5:
+        if random.random() < self.prob:
             return hflip(img, heatmap, mask, kpt, center)
         return img, heatmap, mask, kpt, center
 

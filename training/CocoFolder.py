@@ -5,7 +5,7 @@ import shutil
 import time
 import random
 import os
-from PIL import Image
+import math
 import json
 import cv2
 import Mytransforms
@@ -28,13 +28,12 @@ def read_json_file(file_dir):
 
         return: two list: key_points list and centers list
     """
-    fp = open(filename)
+    fp = open(file_dir)
     data = json.load(fp)
     kpts = []
     centers = []
 
     for info in data:
-        img_path.append(info['filename'])
         kpt = []
         center = []
         lists = info['info']
@@ -50,34 +49,41 @@ def read_json_file(file_dir):
 def generate_vector(vector, cnt, kpts, vec_pair, theta):
 
     height, width, channel = cnt.shape
+    length = len(kpts)
 
-    for h in range(height):
-        for w in range(width):
-            for i in range(channel):
-                a = vec_pair[0][i]
-                b = vec_pair[1][i]
-                if kpts[a][2] > 1 or kpts[b][2] > 1:
-                    continue
-                ax = kpts[a][0]
-                ay = kpts[a][1]
-                bx = kpts[b][0]
-                by = kpts[b][1]
-                
-                bax = bx - ax
-                bay = by - ay
-                norm_ba = math.sqrt(1.0 * bax * bax + bay * bay)
-                bax /= norm_ba
-                bay /= norm_ba
+    for j in range(length):
+        for i in range(channel):
+            a = vec_pair[0][i]
+            b = vec_pair[1][i]
+            if kpts[j][a][2] > 1 or kpts[j][b][2] > 1:
+                continue
+            ax = kpts[j][a][0]
+            ay = kpts[j][a][1]
+            bx = kpts[j][b][0]
+            by = kpts[j][b][1]
 
-                px = w - ax
-                py = h - ay
+            bax = bx - ax
+            bay = by - ay
+            norm_ba = math.sqrt(1.0 * bax * bax + bay * bay)
+            bax /= norm_ba
+            bay /= norm_ba
 
-                ba_p = bax * px + bay * py
-                vba_p = abs(bay * px - bax * py)
-                if ba_p >= 0 and ba_p <= norm_ba and vba_p <= theta:
-                    vector[h][w][2 * i] = (vector[h][w][2 * i] * cnt[h][w][i] + bax) / (cnt[h][w][i] + 1)
-                    vector[h][w][2 * i + 1] = (vector[h][w][2 * i + 1] * cnt[h][w][i] + bay) / (cnt[h][w][i] + 1)
-                    cnt[h][w][i] += 1
+            min_w = max(int(round(min(ax, bx) - theta)), 0)
+            max_w = min(int(round(max(ax, bx) + theta)), width)
+            min_h = max(int(round(min(ay, by) - theta)), 0)
+            max_h = min(int(round(max(ay, by) + theta)), height)
+            for h in range(min_h, max_h):
+                for w in range(min_w, max_w):
+                    px = w - ax
+                    py = h - ay
+
+                    dis = abs(bay * px - bax * py)
+                    if dis <= theta:
+                        vector[h][w][2 * i] = (vector[h][w][2 * i] * cnt[h][w][i] + bax) / (cnt[h][w][i] + 1)
+                        vector[h][w][2 * i + 1] = (vector[h][w][2 * i + 1] * cnt[h][w][i] + bay) / (cnt[h][w][i] + 1)
+                        cnt[h][w][i] += 1
+
+    return vector
 
 class CocoFolder(data.Dataset):
 
@@ -98,27 +104,30 @@ class CocoFolder(data.Dataset):
         kpt = self.kpt_list[index]
         center = self.center_list[index]
 
-        height, width, _ = info.shape
         img = info[:,:,:3]
         mask = info[:,:,3:4]
         heatmap = info[:,:,4:]
 
         img, heatmap, mask, kpt, center = self.transformer(img, heatmap, mask, kpt, center)
 
-        mask = cv2.resize(mask, (height / self.stride, width / self.stride))
+        height, width, _ = img.shape
 
-        heatmap = cv2.resize(heatmap, (height / self.stride, width / self.stride))
+        mask = cv2.resize(mask, (width / self.stride, height / self.stride)).reshape((height / self.stride, width / self.stride, 1))
+
+        heatmap = cv2.resize(heatmap, (width / self.stride, height / self.stride))
         heatmap = heatmap * mask
 
         vecmap = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair) * 2), dtype=np.float32)
         cnt = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair)), dtype=np.int32)
-        vecmap = generate_vector(vector, cnt, kpt, self.vec_pair, self.theta)
+
+        vecmap = generate_vector(vecmap, cnt, kpt, self.vec_pair, self.theta)
         vecmap = vecmap * mask
 
-        img = Mytransforms.normalize(Mytransforms.to_tensor(img), [128.0, 128.0 128,0], [128.0, 128.0, 128.0])
+        img = Mytransforms.normalize(Mytransforms.to_tensor(img), [128.0, 128.0, 128.0], [128.0, 128.0, 128.0])
         mask = Mytransforms.to_tensor(mask)
         heatmap = Mytransforms.to_tensor(heatmap)
         vecmap = Mytransforms.to_tensor(vecmap)
+
 
         return img, heatmap, vecmap, mask
 
