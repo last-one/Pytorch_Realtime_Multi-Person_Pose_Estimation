@@ -42,23 +42,23 @@ def read_mask(mask_path):
 
     return np.load(mask_path)
 
-def generate_heatmap(heat, kpts, num_point, sigma):
+def generate_heatmap(heat, kpt, num_point, sigma):
 
     height, width, _ = heat.shape
 
-    for h in range(height):
-        for w in range(width):
-            for i in range(1, num_point):
-                if kpts[3 * i + 2] <= 1:
-                    continue
-                x = kpts[3 * i]
-                y = kpts[3 * i + 1]
+    for i in range(0, num_point - 1):
+        if kpt[i][2] > 1:
+            continue
+        x = kpt[i][0]
+        y = kpt[i][1]
+        for h in range(max(0, int(math.floor(y - 43))), min(int(math.ceil(y + 43)), height)):
+            for w in range(max(0, int(math.floor(x - 43))), min(int(math.ceil(x + 43)), width)):
                 dis = ((x - w) * (x - w) + (h - y) * (h - y)) / 2.0 / sigma / sigma
-                if dis > 4.6052: # ln(100)
+                if dis > 4.6052:
                     continue
-                heat[h][w][i] += math.exp(-dis)
-                if heat[h][w][i] > 1:
-                    heat[h][w][i] = 1
+                heat[h][w][i + 1] += math.exp(-dis)
+                if heat[h][w][i + 1] > 1:
+                    heat[h][w][i + 1] = 1
 
 class GenerateData(object):
 
@@ -69,7 +69,7 @@ class GenerateData(object):
         self.mask_path = mask_path
         self.num_point = num_point
         self.save_path = save_path
-        self.sigma = 7.0
+        self.sigma = 14.0
 
     def _generate(self):
 
@@ -80,13 +80,12 @@ class GenerateData(object):
         for info in zip(self.img_list, self.kpt_list):
             name = info[0].split('/')[-1].split('.')[0]
 
-            img = np.array(cv2.imread(os.path.join(self.img_path, info[0])))
+            img = np.array(cv2.imread(os.path.join(self.img_path, info[0])), dtype=np.float32)
             img = img[:,:,::-1]
-            img.dtype=np.float32
 
             height, width, _ = img.shape
             mask = read_mask(os.path.join(self.mask_path, name + '.npy')).reshape((height, width, 1))
-            mask.dtype=np.float32
+            mask = np.array(mask, dtype=np.float32)
 
             kpts = info[1]
             heat = np.zeros((height, width, self.num_point), dtype=np.float32)
@@ -96,12 +95,10 @@ class GenerateData(object):
             heat[:,:,0] = 1.0 - np.max(heat[:,:,1:self.num_point], axis=2)
 
             img_labels = np.concatenate((img, mask, heat), axis=2)
-            np.save(os.path.joint(self.save_path, name), img_labels)
+            np.savez_compressed(os.path.join(self.save_path, name), img_labels)
             cnt += 1
             if cnt % 1000 == 0:
                 print "Processed {} of {}".format(cnt, length)
-            if cnt == 20:
-                break
 
 if __name__ == '__main__':
 
