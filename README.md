@@ -8,6 +8,7 @@ Code for reproducing CVPR 2017 Oral paper using pytorch
 
 ## Contents
 1.[preprocessing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing)
+
 2.[training](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training)
 
 ## Require
@@ -15,9 +16,13 @@ Code for reproducing CVPR 2017 Oral paper using pytorch
 
 ## Training steps
 - Download the data set, annotations and [COCO official toolbox](https://github.com/cocodataset/cocoapi)
-- Generate json file and masks `python generate_json_mask,py`
-- Generate training data `python generate_data.py`
-- Train the model `sh train.sh`
+- Go to the "preprocessing" folder `cd preprocessing`.
+- Generate json file and masks `python generate_json_mask,py`.
+- Generate training data `python generate_data.py`.
+- Go to the "training" folder `cd ../training`.
+- Set the train parameters in "config.yml".
+- Set the train data dir and val data dir. 
+- Train the model `sh train.sh`.
 ## Citation
 Please cite the paper in your publocations if it helps your research:
 	
