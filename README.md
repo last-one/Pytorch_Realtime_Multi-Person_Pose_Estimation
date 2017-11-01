@@ -17,11 +17,11 @@ Code for reproducing CVPR 2017 Oral paper using pytorch
 ## Instructions
 [Mytransforms.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/Mytransforms.py): some transformer.
 
-Because the heatmap, mask are generated offline, so they need be transformed with images. Besides the keypoints and center also need be transformed together.
+transformer the image, mask, keypoints and center points, together.
 
 [CocoFolder.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/CocoFolder.py): to read data for network.
 
-It will generate the PAFs vector when get the image.
+It will generate the PAFs vector and heatmap when get the image.
 
 The PAFs vector's format as follow:
 
@@ -58,10 +58,9 @@ Where each index is the key value corresponding to each part in [POSE_COCO_BODY_
 - Download the data set, annotations and [COCO official toolbox](https://github.com/cocodataset/cocoapi)
 - Go to the "preprocessing" folder `cd preprocessing`.
 - Generate json file and masks `python generate_json_mask,py`.
-- Generate training data `python generate_data.py`.
 - Go to the "training" folder `cd ../training`.
 - Set the train parameters in "config.yml".
-- Set the train data dir and val data dir. 
+- Set the train data dir , train mask dir, train json filepath and val data dir, val mask dir, val json filepath. 
 - Train the model `sh train.sh`.
 ## Citation
 Please cite the paper in your publocations if it helps your research:
