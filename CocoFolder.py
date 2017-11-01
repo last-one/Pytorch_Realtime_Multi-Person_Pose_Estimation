@@ -7,6 +7,7 @@ import random
 import os
 import math
 import json
+from PIL import Image
 import cv2
 import Mytransforms
 
@@ -45,6 +46,32 @@ def read_json_file(file_dir):
     fp.close()
 
     return kpts, centers
+
+def generate_heatmap(heatmap, kpt, stride, sigma):
+
+    height, width, num_point = heatmap.shape
+    start = stride / 2.0 - 0.5
+
+    num = len(kpt)
+    length = len(kpt[0])
+    for i in range(num):
+        for j in range(length):
+            if kpt[i][j][2] > 1:
+                continue
+            x = kpt[i][j][0]
+            y = kpt[i][j][1]
+            for h in range(height):
+                for w in range(width):
+                    xx = start + w * stride
+                    yy = start + h * stride
+                    dis = ((xx - x) * (xx - x) + (yy - y) * (yy - y)) / 2.0 / sigma / sigma
+                    if dis > 4.6052:
+                        continue
+                    heatmap[h][w][j + 1] += math.exp(-dis)
+                    if heatmap[h][w][j + 1] > 1:
+                        heatmap[h][w][j + 1] = 1
+
+    return heatmap
 
 def generate_vector(vector, cnt, kpts, vec_pair, stride, theta):
 
@@ -90,48 +117,34 @@ class CocoFolder(data.Dataset):
 
     def __init__(self, file_dir, stride, transformer=None):
 
-        self.info_list = read_data_file(file_dir[0])
-        self.kpt_list, self.center_list = read_json_file(file_dir[1])
+        self.img_list = read_data_file(file_dir[0])
+        self.mask_list = read_data_file(file_dir[1])
+        self.kpt_list, self.center_list = read_json_file(file_dir[2])
         self.stride = stride
-        # self.num_points = num_points
         self.transformer = transformer
         self.vec_pair = [[2,3,5,6,8,9,11,12,0,1,1,1,1,2,5,0,0,15,14],[3,4,6,7,9,10,12,13,1,8,11,2,5,16,17,15,14,17,16]] # different from openpose
         self.theta = 1.0
+        self.sigma = 7.0
 
     def __getitem__(self, index):
 
-        info_path = self.info_list[index]
-        info = np.load(info_path)['data']
+        img_path = self.img_list[index]
+        img = np.array(Image.open(img_path), dtype=np.float32)
+        mask_path = self.mask_list[index]
+        mask = np.load(mask_path)
+        mask = np.array(mask, dtype=np.float32)
+
         kpt = self.kpt_list[index]
         center = self.center_list[index]
 
-        img = info[:,:,:3]
-        mask = info[:,:,3:4]
-        heatmap = info[:,:,4:]
-
-        if self.transformer is not None:
-            img, heatmap, mask, kpt, center = self.transformer(img, heatmap, mask, kpt, center)
-        else:
-            height, width, _ = img.shape
-            img = cv2.resize(img, (368, 368))
-            heatmap = cv2.resize(heatmap, (368, 368))
-            mask = cv2.resize(mask, (368, 368))
-            w_scale = 368.0 / width
-            h_scale = 368.0 / height
-            num = len(kpt)
-            length = len(kpt[0])
-            for i in range(num):
-                for j in range(length):
-                    kpt[i][j][0] *= w_scale
-                    kpt[i][j][1] *= h_scale
-                center[i][0] *= w_scale
-                center[i][1] *= h_scale
+        img, mask, kpt, center = self.transformer(img, mask, kpt, center)
 
         height, width, _ = img.shape
 
         mask = cv2.resize(mask, (width / self.stride, height / self.stride)).reshape((height / self.stride, width / self.stride, 1))
 
-        heatmap = cv2.resize(heatmap, (width / self.stride, height / self.stride))
+        heatmap = np.zeros((height / self.stride, width / self.stride, len(kpt[0]) + 1), dtype=np.float32)
+        heatmap = generate_heatmap(heatmap, kpt, self.stride, self.sigma)
         heatmap = heatmap * mask
 
         vecmap = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair[0]) * 2), dtype=np.float32)
@@ -149,4 +162,4 @@ class CocoFolder(data.Dataset):
 
     def __len__(self):
 
-        return len(self.info_list)
+        return len(self.img_list)
