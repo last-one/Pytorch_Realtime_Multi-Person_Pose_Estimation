@@ -53,11 +53,10 @@ class Pose_Estimation(nn.Module):
             if 'pool' in key:
                 layers += [nn.MaxPool2d(kernel_size=v[0], stride=v[1], padding=v[2])]
             else:
+                conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
                 if batch_norm:
-                    conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
                     layers += [conv2d, nn.BatchNorm2d(v[1]), nn.ReLU(inplace=True)]
                 else:
-                    conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
                     layers += [conv2d, nn.ReLU(inplace=True)]
 
         if last_activity:
@@ -65,11 +64,10 @@ class Pose_Estimation(nn.Module):
             key = one_layer.keys()[0]
             v = one_layer[key]
             # print key, v
+            conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
             if batch_norm:
-                conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
                 layers += [conv2d, nn.BatchNorm2d(v[1]), nn.ReLU(inplace=True)]
             else:
-                conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
                 layers += [conv2d, nn.ReLU(inplace=True)]
         else:
             one_layer = net_dict[-1]
