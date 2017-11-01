@@ -155,15 +155,13 @@ def hflip(img, heatmap, mask, kpt, center):
         for j in range(length):
             if kpt[i][j][2] <= 1:
                 kpt[i][j][0] = width - 1 - kpt[i][j][0]
-                kpt[i][j][1] = height - 1 - kpt[i][j][1]
         center[i][0] = width - 1 - center[i][0]
-        center[i][1] = height - 1 - center[i][1]
 
     swap_pair = [[3, 6], [4, 7], [5, 8], [9, 12], [10, 13], [11, 14], [15, 16], [17, 18]]
     for x in swap_pair:
-        temp_map = heatmap[:,:,x[0]]
-        heatmap[:,:,x[0]] = heatmap[:,:,x[1]]
-        heatmap[:,:,x[1]] = temp_map
+        temp_map = heatmap[:,:,x[0]].copy()
+        heatmap[:,:,x[0]] = heatmap[:,:,x[1]].copy()
+        heatmap[:,:,x[1]] = temp_map.copy()
 
         for i in range(num):
             temp_point = kpt[i][x[0] - 1]
@@ -225,8 +223,8 @@ class RandomResizedCrop(object):
 
         # Fallback
         w = min(width, height)
-        i = (img.size[1] - w) // 2
-        j = (img.size[0] - w) // 2
+        i = (height - w) // 2
+        j = (width - w) // 2
         return i, j, w, w
 
     def __call__(self, img, heatmap, mask, kpt, center):

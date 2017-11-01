@@ -46,7 +46,7 @@ def read_json_file(file_dir):
 
     return kpts, centers
 
-def generate_vector(vector, cnt, kpts, vec_pair, theta):
+def generate_vector(vector, cnt, kpts, vec_pair, stride, theta):
 
     height, width, channel = cnt.shape
     length = len(kpts)
@@ -57,10 +57,10 @@ def generate_vector(vector, cnt, kpts, vec_pair, theta):
             b = vec_pair[1][i]
             if kpts[j][a][2] > 1 or kpts[j][b][2] > 1:
                 continue
-            ax = kpts[j][a][0]
-            ay = kpts[j][a][1]
-            bx = kpts[j][b][0]
-            by = kpts[j][b][1]
+            ax = kpts[j][a][0] * 1.0 / stride
+            ay = kpts[j][a][1] * 1.0 / stride
+            bx = kpts[j][b][0] * 1.0 / stride
+            by = kpts[j][b][1] * 1.0 / stride
 
             bax = bx - ax
             bay = by - ay
@@ -72,6 +72,7 @@ def generate_vector(vector, cnt, kpts, vec_pair, theta):
             max_w = min(int(round(max(ax, bx) + theta)), width)
             min_h = max(int(round(min(ay, by) - theta)), 0)
             max_h = min(int(round(max(ay, by) + theta)), height)
+
             for h in range(min_h, max_h):
                 for w in range(min_w, max_w):
                     px = w - ax
@@ -94,7 +95,7 @@ class CocoFolder(data.Dataset):
         self.stride = stride
         # self.num_points = num_points
         self.transformer = transformer
-        self.vec_pair = [[2,3,5,6,8,9,11,12,0,1,1,1,1,2,5,0,0,15,14],[3,4,6,7,9,10,12,13,1,8,11,2,5,16,17,15,14,16,17]] # different from openpose
+        self.vec_pair = [[2,3,5,6,8,9,11,12,0,1,1,1,1,2,5,0,0,15,14],[3,4,6,7,9,10,12,13,1,8,11,2,5,16,17,15,14,17,16]] # different from openpose
         self.theta = 1.0
 
     def __getitem__(self, index):
@@ -108,7 +109,23 @@ class CocoFolder(data.Dataset):
         mask = info[:,:,3:4]
         heatmap = info[:,:,4:]
 
-        img, heatmap, mask, kpt, center = self.transformer(img, heatmap, mask, kpt, center)
+        if self.transformer is not None:
+            img, heatmap, mask, kpt, center = self.transformer(img, heatmap, mask, kpt, center)
+        else:
+            height, width, _ = img.shape
+            img = cv2.resize(img, (368, 368))
+            heatmap = cv2.resize(heatmap, (368, 368))
+            mask = cv2.resize(mask, (368, 368))
+            w_scale = 368.0 / width
+            h_scale = 368.0 / height
+            num = len(kpt)
+            length = len(kpt[0])
+            for i in range(num):
+                for j in range(length):
+                    kpt[i][j][0] *= w_scale
+                    kpt[i][j][1] *= h_scale
+                center[i][0] *= w_scale
+                center[i][1] *= h_scale
 
         height, width, _ = img.shape
 
@@ -117,17 +134,16 @@ class CocoFolder(data.Dataset):
         heatmap = cv2.resize(heatmap, (width / self.stride, height / self.stride))
         heatmap = heatmap * mask
 
-        vecmap = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair) * 2), dtype=np.float32)
-        cnt = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair)), dtype=np.int32)
+        vecmap = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair[0]) * 2), dtype=np.float32)
+        cnt = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair[0])), dtype=np.int32)
 
-        vecmap = generate_vector(vecmap, cnt, kpt, self.vec_pair, self.theta)
+        vecmap = generate_vector(vecmap, cnt, kpt, self.vec_pair, self.stride, self.theta)
         vecmap = vecmap * mask
 
         img = Mytransforms.normalize(Mytransforms.to_tensor(img), [128.0, 128.0, 128.0], [128.0, 128.0, 128.0])
         mask = Mytransforms.to_tensor(mask)
         heatmap = Mytransforms.to_tensor(heatmap)
         vecmap = Mytransforms.to_tensor(vecmap)
-
 
         return img, heatmap, vecmap, mask
 
