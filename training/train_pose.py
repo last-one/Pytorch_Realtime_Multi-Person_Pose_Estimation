@@ -6,11 +6,11 @@ import os
 import sys
 import argparse
 import time
+sys.path.append('..')
 import CocoFolder
 import Mytransforms 
 from BasicTool import adjust_learning_rate as adjust_learning_rate
 from BasicTool import AverageMeter as AverageMeter
-from BasicTool import accuracy as accuracy
 from BasicTool import save_checkpoint as save_checkpoint
 from BasicTool import Config as Config
 import pose_estimation
@@ -26,10 +26,10 @@ def parse():
                         dest='pretrained', help='the path of pretrained model')
     parser.add_argument('--root', default=None, type=str,
                         dest='root', help='the root of images')
-    parser.add_argument('--train_file', type=str,
-                        dest='train_file', help='the path of train file')
-    parser.add_argument('--val_file', default=None, type=str,
-                        dest='val_file', help='the path of val file')
+    parser.add_argument('--train_dir', nargs='+', type=str,
+                        dest='train_dir', help='the path of train file')
+    parser.add_argument('--val_dir', default=None, nargs='+', type=str,
+                        dest='val_dir', help='the path of val file')
     parser.add_argument('--num_classes', default=1000, type=int,
                         dest='num_classes', help='num_classes (default: 1000)')
 
@@ -37,7 +37,7 @@ def parse():
 
 def construct_model(args):
 
-    model = pose_estimation.PoseModel(num_point=19, num_vector=38, pretrained=True)
+    model = pose_estimation.PoseModel(num_point=19, num_vector=19, pretrained=True)
     # state_dict = torch.load(args.pretrained)['state_dict']
     # from collections import OrderedDict
     # new_state_dict = OrderedDict()
@@ -52,24 +52,25 @@ def construct_model(args):
 
 def train_val(model, args):
 
-    traindir = args.train_file
-    valdir = args.val_file
+    traindir = args.train_dir
+    valdir = args.val_dir
+    print traindir, valdir
 
     config = Config(args.config)
     cudnn.benchmark = True
     
     train_loader = torch.utils.data.DataLoader(
-            CocoFolder(traindir, 8,
+            CocoFolder.CocoFolder(traindir, 8,
                 Mytransforms.Compose([Mytransforms.RandomRotate(40),
-                Mytransforms.RandomResizedCrop(368),
+                Mytransforms.RandomResizedCrop(368, 40),
                 Mytransforms.RandomHorizontalFlip(),
             ])),
             batch_size=config.batch_size, shuffle=True,
             num_workers=config.workers, pin_memory=True)
 
-    if config.test_interval != 0 and args.val_file is not None:
+    if config.test_interval != 0 and args.val_dir is not None:
         val_loader = torch.utils.data.DataLoader(
-                CocoFolder(valdir, 8,
+                CocoFolder.CocoFolder(valdir, 8,
                     Mytransforms.Compose([Mytransforms.Resize(400),
                     Mytransforms.CenterCrop(368),
                 ])),
@@ -107,7 +108,7 @@ def train_val(model, args):
             heatmap_var = torch.autograd.Variable(heatmap)
             vecmap_var = torch.autograd.Variable(vecmap)
             mask_var = torch.autograd.Variable(mask)
-            
+
             vec1, heat1, vec2, heat2, vec3, heat3, vec4, heat4, vec5, heat5, vec6, heat6 = model(input_var, mask_var)
             loss1_1 = criterion(vec1, vecmap_var)
             loss1_2 = criterion(heat1, heatmap_var)
@@ -146,7 +147,7 @@ def train_val(model, args):
                     #'Prec@1 = {top1.val:.3f}% (ave = {top1.avg:.3f}%)\t'
                     #'Prec@{2} = {topk.val:.3f}% (ave = {topk.avg:.3f}%)\n'.format(
                     iters, learning_rate, batch_time=batch_time,
-                    data_time=data_time, loss=losses)
+                    data_time=data_time, loss=losses))
                     #top1=top1, topk=topk))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
                 batch_time.reset()
@@ -155,7 +156,7 @@ def train_val(model, args):
                 # top1.reset()
                 # topk.reset()
     
-            if config.test_interval != 0 and args.val_file is not None and iters % config.test_interval == 0:
+            if config.test_interval != 0 and args.val_dir is not None and iters % config.test_interval == 0:
 
                 model.eval()
                 for i, (input, heatmap, vecmap, mask) in enumerate(val_loader):
@@ -189,12 +190,12 @@ def train_val(model, args):
     
                 batch_time.update(time.time() - end)
                 end = time.time()
-                # is_best = top1.avg > best_model
+                is_best = losses.avg < best_model
                 best_model = min(best_model, losses.avg)
                 save_checkpoint({
                     'iter': iters,
                     'state_dict': model.state_dict(),
-                    }, is_best, 'se_resnext101_scene80'.format(iters))
+                    }, is_best, 'openpose_coco'.format(iters))
     
                 print(
                     'Test Time {batch_time.sum:.3f}s, ({batch_time.avg:.3f})\t'
