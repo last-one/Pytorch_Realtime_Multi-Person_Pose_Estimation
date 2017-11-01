@@ -14,6 +14,46 @@ Code for reproducing CVPR 2017 Oral paper using pytorch
 ## Require
 [Pytorch](http://pytorch.org/)
 
+## Instructions
+[Mytransforms.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/Mytransforms.py): some transformer.
+
+Because the heatmap, mask are generated offline, so they need be transformed with images. Besides the keypoints and center also need be transformed together.
+
+[CocoFolder.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/CocoFolder.py): to read data for network.
+
+It will generate the PAFs vector when get the image.
+
+The PAFs vector's format as follow:
+
+```
+POSE_COCO_PAIRS = {
+	{3,  4},
+	{4,  5},
+	{6,  7},
+	{7,  8},
+	{9,  10},
+	{10, 11},
+	{12, 13},
+	{13, 14},
+	{1,  2},
+	{2,  9},
+	{2,  12},
+	{2,  3},
+	{2,  6},
+	{3,  17},
+	{6,  18},
+	{1,  16},
+	{1,  15},
+	{16, 17},
+	{15, 18},
+}
+```
+Where each index is the key value corresponding to each part in [POSE_COCO_BODY_PARTS](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing/README.md)
+
+[BasicTool.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/BasicTool.py): some common functions, such as adjust learning rate, read configuration and etc.
+
+[visualize_input.ipynb](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/visualize_input.ipynb): the script to vierfy the validaity of preprocessing and generating heatmap and vectors. It shows some examples.
+
 ## Training steps
 - Download the data set, annotations and [COCO official toolbox](https://github.com/cocodataset/cocoapi)
 - Go to the "preprocessing" folder `cd preprocessing`.
