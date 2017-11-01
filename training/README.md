@@ -10,4 +10,4 @@ TODO: the stage is adjustable.
 
 [config.yml](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training/config.py): some training parameters.
 
-[train.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training/train.py): the script for training.
+[train_pose.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training/train.py): the script for training.
