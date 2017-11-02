@@ -95,6 +95,8 @@ def rotate(img, mask, kpt, center, degree):
                 p = rotateMat.dot(p)
                 kpt[i][j][0] = p[0]
                 kpt[i][j][1] = p[1]
+                if kpt[i][j][0] < 0 or kpt[i][j][0] >= width or kpt[i][j][1] < 0 or kpt[i][j][1] >= height:
+                    kpt[i][j][2] = 2
         x = center[i][0]
         y = center[i][1]
         p = np.array([x, y, 1])
