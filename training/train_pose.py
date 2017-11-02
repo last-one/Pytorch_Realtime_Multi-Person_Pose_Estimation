@@ -104,6 +104,7 @@ def train_val(model, args):
 
             heatmap = heatmap.cuda(async=True)
             vecmap = vecmap.cuda(async=True)
+            mask = mask.cuda()
             input_var = torch.autograd.Variable(input)
             heatmap_var = torch.autograd.Variable(heatmap)
             vecmap_var = torch.autograd.Variable(vecmap)
@@ -163,6 +164,7 @@ def train_val(model, args):
 
                     heatmap = heatmap.cuda(async=True)
                     vecmap = vecmap.cuda(async=True)
+                    mask = mask.cuda()
                     input_var = torch.autograd.Variable(input, volatile=True)
                     heatmap_var = torch.autograd.Variable(heatmap, volatile=True)
                     vecmap_var = torch.autograd.Variable(vecmap, volatile=True)
