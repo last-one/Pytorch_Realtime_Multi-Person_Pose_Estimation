@@ -15,9 +15,11 @@ TODO
 
 2.[training](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training): some scripts for training networks.
 
-3.[caffe2pytorch](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe2pytorch): the script for converting.
+3.[testing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/testing): TODO.
 
-4.[caffe_model](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe_model): caffe model
+4.[caffe2pytorch](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe2pytorch): the script for converting.
+
+5.[caffe_model](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe_model): caffe model
 
 ## Require
 [Pytorch](http://pytorch.org/)
