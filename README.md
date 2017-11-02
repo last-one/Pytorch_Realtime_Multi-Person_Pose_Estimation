@@ -63,6 +63,7 @@ Where each index is the key value corresponding to each part in [POSE_COCO_BODY_
 [visualize_input.ipynb](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/visualize_input.ipynb): the script to vierfy the validaity of preprocessing and generating heatmap and vectors. It shows some examples.
 
 ## Training steps
+
 - Download the data set, annotations and [COCO official toolbox](https://github.com/cocodataset/cocoapi)
 - Go to the "preprocessing" folder `cd preprocessing`.
 - Generate json file and masks `python generate_json_mask,py`.
@@ -71,7 +72,11 @@ Where each index is the key value corresponding to each part in [POSE_COCO_BODY_
 - Set the train data dir , train mask dir, train json filepath and val data dir, val mask dir, val json filepath. 
 - Train the model `sh train.sh`.
 
-When you want to train some other datasets, please change the code: [Mytransforms.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/Mytransforms.py#L158), [CocoFolder.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/CocoFolder.py#125) to correspond to your datasets. Besides, please ensure '0' corresponds to background.
+
+## Notice
+
+- When you want to train some other datasets, please change the code: [Mytransforms.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/Mytransforms.py#L158), [CocoFolder.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/CocoFolder.py#125) to correspond to your datasets. Besides, please ensure '0' corresponds to background.
+- The converted model and my code are used BGR to train and test images.
 
 ## Citation
 Please cite the paper in your publocations if it helps your research:
