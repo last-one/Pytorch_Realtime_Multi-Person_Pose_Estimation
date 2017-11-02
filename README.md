@@ -24,7 +24,7 @@ TODO
 ## Require
 [Pytorch](http://pytorch.org/)
 
-[Caffe](http://caffe/berkeleyvision.org/): If you want to convert the caffemodel by your own.
+[Caffe](http://caffe.berkeleyvision.org/): If you want to convert the caffemodel by your own.
 
 ## Instructions
 [Mytransforms.py](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/Mytransforms.py): some transformer.
