@@ -8,11 +8,13 @@ It need four arguments: the path of COCO's annotation, the savepath for json fil
 
 Json file is used to save filename, person_center and keypoints. It's format as follow:
 ```
-[{"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [], "keypoints": []}]},
-{"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [], "keypoints": []}]},
+[{"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [x, y], "keypoints": [x1, y1, v1, x2, y2, v2, ..., x18, y18, v18]}]},
+{"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [x, y], "keypoints": [x1, y1, v1, x2, y2, v2, ..., x18, y18, v18]}]},
 ...
-{"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [], "keypoints": []}]}]
+{"filename": "COCO_train2014_000000118171.jpg", "info": [{"pos": [x, y], "keypoints": [x1, y1, v1, x2, y2, v2, ..., x18, y18, v18]}]}]
 ```
+where, v = 0 means labelled but unvisuable, v = 1 means labelled and visuable, v = 2 means missed.
+
 The body part order of the COCO (17 given part and 1 calculated part (neck)) keypoints as follow:
 
 ```

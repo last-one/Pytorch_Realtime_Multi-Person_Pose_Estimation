@@ -11,9 +11,13 @@ Code for reproducing CVPR 2017 Oral paper using pytorch
 TODO
 
 ## Contents
-1.[preprocessing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing)
+1.[preprocessing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing): some scripts for preprocessing data.
 
-2.[training](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training)
+2.[training](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training): some scripts for training networks.
+
+3.[caffe2pytorch](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe2pytorch): the script for converting.
+
+4.[caffe_model](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe_model): caffe model
 
 ## Require
 [Pytorch](http://pytorch.org/)
