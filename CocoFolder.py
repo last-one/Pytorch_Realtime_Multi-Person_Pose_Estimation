@@ -129,7 +129,7 @@ class CocoFolder(data.Dataset):
     def __getitem__(self, index):
 
         img_path = self.img_list[index]
-        img = np.array(Image.open(img_path), dtype=np.float32)
+        img = np.array(cv2.(img_path), dtype=np.float32)
         mask_path = self.mask_list[index]
         mask = np.load(mask_path)
         mask = np.array(mask, dtype=np.float32)
