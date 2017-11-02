@@ -4,6 +4,7 @@ import shutil
 import time
 import os
 import random
+from easydict import EasyDict as edict
 import yaml
 import numpy as np
 

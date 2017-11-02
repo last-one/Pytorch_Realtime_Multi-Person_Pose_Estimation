@@ -195,7 +195,7 @@ def train_val(model, args):
                 save_checkpoint({
                     'iter': iters,
                     'state_dict': model.state_dict(),
-                    }, is_best, 'openpose_coco'.format(iters))
+                    }, is_best, 'openpose_coco')
     
                 print(
                     'Test Time {batch_time.sum:.3f}s, ({batch_time.avg:.3f})\t'

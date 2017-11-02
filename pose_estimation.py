@@ -160,7 +160,7 @@ def PoseModel(num_point, num_vector, num_stages=6, batch_norm=False, pretrained=
             vgg19 = models.vgg19_bn(pretrained=True)
             parameter_num *= 6
         else:
-            vgg19 = models.vgg19_bn(pretrained=True)
+            vgg19 = models.vgg19(pretrained=True)
             parameter_num *= 2
         vgg19_state_dict = vgg19.state_dict()
         vgg19_keys = vgg19_state_dict.keys()
