@@ -86,6 +86,7 @@ def train_val(model, args):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
+    losses_list = [AverageMeter() for i in range(12)]
     top1 = AverageMeter()
     topk = AverageMeter()
     
@@ -128,6 +129,8 @@ def train_val(model, args):
 
             # prec1, preck = accuracy(output.data, label, topk=(1, config.topk))
             losses.update(loss.data[0], input.size(0))
+            for i, l in enumerate[loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]:
+                losses_list[i].update(l.data[0], input.size(0))
             # top1.update(prec1[0], input.size(0))
             # topk.update(preck[0], input.size(0))
 
@@ -150,10 +153,15 @@ def train_val(model, args):
                     iters, learning_rate, batch_time=batch_time,
                     data_time=data_time, loss=losses))
                     #top1=top1, topk=topk))
+                for i in range(0,12,2):
+                    print('Loss{0}_1 = {loss1.val:.4f} (ave = {loss1.avg:.4f})\t'
+                        'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(i / 2 + 1, i / 2 + 1, loss1=losses_list[i], loss2=losses_list[i + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
                 batch_time.reset()
                 data_time.reset()
                 losses.reset()
+                for i in range(12):
+                    losses_list[i].reset()
                 # top1.reset()
                 # topk.reset()
     
@@ -185,8 +193,11 @@ def train_val(model, args):
                     loss6_2 = criterion(heat6, heatmap_var)
                     
                     loss = loss1_1 + loss1_2 + loss2_1 + loss2_2 + loss3_1 + loss3_2 + loss4_1 + loss4_2 + loss5_1 + loss5_2 + loss6_1 + loss6_2
+
                     # prec1, preck = accuracy(output.data, label, topk=(1, config.topk))
                     losses.update(loss.data[0], input.size(0))
+                    for i, l in enumerate[loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]:
+                        losses_list[i].update(l.data[0], input.size(0))
                     # top1.update(prec1[0], input.size(0))
                     # topk.update(preck[0], input.size(0))
     
@@ -205,10 +216,15 @@ def train_val(model, args):
                     #'Prec@1 {top1.avg:.3f}%\t'
                     #'Prec@{0} {topk.avg:.3f}%\n'.format(
                     batch_time=batch_time, loss=losses))
+                for i in range(0,12,2):
+                    print('Loss{0}_1 = {loss1.val:.4f} (ave = {loss1.avg:.4f})\t'
+                        'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(i / 2 + 1, i / 2 + 1, loss1=losses_list[i], loss2=losses_list[i + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
     
                 batch_time.reset()
                 losses.reset()
+                for i in range(12):
+                    losses_list[i].reset()
                 # top1.reset()
                 # topk.reset()
                 
