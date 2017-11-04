@@ -153,7 +153,7 @@ class CocoFolder(data.Dataset):
         vecmap = generate_vector(vecmap, cnt, kpt, self.vec_pair, self.stride, self.theta)
         vecmap = vecmap * mask
 
-        img = Mytransforms.normalize(Mytransforms.to_tensor(img), [128.0, 128.0, 128.0], [128.0, 128.0, 128.0])
+        img = Mytransforms.normalize(Mytransforms.to_tensor(img), [128.0, 128.0, 128.0], [256.0, 256.0, 256.0]) # mean, std
         mask = Mytransforms.to_tensor(mask)
         heatmap = Mytransforms.to_tensor(heatmap)
         vecmap = Mytransforms.to_tensor(vecmap)
