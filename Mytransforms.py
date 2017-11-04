@@ -387,6 +387,7 @@ class CenterCrop(object):
         if self.resize is not None:
             img, mask, kpt, center = resize(img, mask, kpt, center, self.resize)
         i, j, h, w = self.get_params(img, self.size)
+        mask = np.expand_dims(mask, axis=-1)
         return crop(img, mask, kpt, center, i, j, h, w)
 
 class RandomHorizontalFlip(object):
