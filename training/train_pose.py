@@ -259,6 +259,7 @@ def train_val(model, args):
 
 if __name__ == '__main__':
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
     args = parse()
     model = construct_model(args)
     train_val(model, args)
