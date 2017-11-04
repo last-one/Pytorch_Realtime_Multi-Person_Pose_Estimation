@@ -79,8 +79,7 @@ def train_val(model, args):
     
     criterion = nn.MSELoss().cuda()
     
-    optimizer = torch.optim.SGD(model.parameters(), config.base_lr,
-                                momentum=config.momentum,
+    optimizer = torch.optim.Adam(model.parameters(), config.base_lr,
                                 weight_decay=config.weight_decay)
     
     batch_time = AverageMeter()
@@ -129,8 +128,8 @@ def train_val(model, args):
 
             # prec1, preck = accuracy(output.data, label, topk=(1, config.topk))
             losses.update(loss.data[0], input.size(0))
-            for i, l in enumerate[loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]:
-                losses_list[i].update(l.data[0], input.size(0))
+            for cnt, l in enumerate([loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]):
+                losses_list[cnt].update(l.data[0], input.size(0))
             # top1.update(prec1[0], input.size(0))
             # topk.update(preck[0], input.size(0))
 
@@ -144,31 +143,31 @@ def train_val(model, args):
             iters += 1
             if iters % config.display == 0:
                 print('Train Iteration: {0}\t'
-                    'Time {batch_time.sum:.3f}s / 50iters, ({batch_time.avg:.3f})\t'
+                    'Time {batch_time.sum:.3f}s / {1}iters, ({batch_time.avg:.3f})\t'
                     'Data load {data_time.sum:.3f}s / 50iters, ({data_time.avg:3f})\n'
-                    'Learning rate = {1}\n'
+                    'Learning rate = {2}\n'
                     'Loss = {loss.val:.4f} (ave = {loss.avg:.4f})\n'.format(
                     #'Prec@1 = {top1.val:.3f}% (ave = {top1.avg:.3f}%)\t'
                     #'Prec@{2} = {topk.val:.3f}% (ave = {topk.avg:.3f}%)\n'.format(
-                    iters, learning_rate, batch_time=batch_time,
+                    iters, config.display, learning_rate, batch_time=batch_time,
                     data_time=data_time, loss=losses))
                     #top1=top1, topk=topk))
-                for i in range(0,12,2):
+                for cnt in range(0,12,2):
                     print('Loss{0}_1 = {loss1.val:.4f} (ave = {loss1.avg:.4f})\t'
-                        'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(i / 2 + 1, i / 2 + 1, loss1=losses_list[i], loss2=losses_list[i + 1]))
+                        'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(cnt / 2 + 1, cnt / 2 + 1, loss1=losses_list[cnt], loss2=losses_list[cnt + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
                 batch_time.reset()
                 data_time.reset()
                 losses.reset()
-                for i in range(12):
-                    losses_list[i].reset()
+                for cnt in range(12):
+                    losses_list[cnt].reset()
                 # top1.reset()
                 # topk.reset()
     
             if config.test_interval != 0 and args.val_dir is not None and iters % config.test_interval == 0:
 
                 model.eval()
-                for i, (input, heatmap, vecmap, mask) in enumerate(val_loader):
+                for j, (input, heatmap, vecmap, mask) in enumerate(val_loader):
 
                     heatmap = heatmap.cuda(async=True)
                     vecmap = vecmap.cuda(async=True)
@@ -196,8 +195,8 @@ def train_val(model, args):
 
                     # prec1, preck = accuracy(output.data, label, topk=(1, config.topk))
                     losses.update(loss.data[0], input.size(0))
-                    for i, l in enumerate[loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]:
-                        losses_list[i].update(l.data[0], input.size(0))
+                    for cnt, l in enumerate([loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]):
+                        losses_list[cnt].update(l.data[0], input.size(0))
                     # top1.update(prec1[0], input.size(0))
                     # topk.update(preck[0], input.size(0))
     
@@ -223,8 +222,8 @@ def train_val(model, args):
     
                 batch_time.reset()
                 losses.reset()
-                for i in range(12):
-                    losses_list[i].reset()
+                for cnt in range(12):
+                    losses_list[cnt].reset()
                 # top1.reset()
                 # topk.reset()
                 

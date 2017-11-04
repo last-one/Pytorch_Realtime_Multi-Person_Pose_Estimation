@@ -91,7 +91,7 @@ def generate_vector(vector, cnt, kpts, vec_pair, stride, theta):
 
             bax = bx - ax
             bay = by - ay
-            norm_ba = math.sqrt(1.0 * bax * bax + bay * bay)
+            norm_ba = math.sqrt(1.0 * bax * bax + bay * bay) + 1e-9 # to aviod two points have same position.
             bax /= norm_ba
             bay /= norm_ba
 
@@ -129,7 +129,7 @@ class CocoFolder(data.Dataset):
     def __getitem__(self, index):
 
         img_path = self.img_list[index]
-        img = np.array(cv2.(img_path), dtype=np.float32)
+        img = np.array(cv2.imread(img_path), dtype=np.float32)
         mask_path = self.mask_list[index]
         mask = np.load(mask_path)
         mask = np.array(mask, dtype=np.float32)

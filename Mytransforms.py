@@ -42,13 +42,13 @@ def resize(img, mask, kpt, center, size):
             return img, heatmap, mask, kpt, center
         if w < h:
             ow = size
-            oh = int(size * w / h)
+            oh = int(size * h * 1.0 / w)
         else:
             oh = size
-            ow = int(size * w / h)
+            ow = int(size * w * 1.0 / h)
 
-        w_scale = ow / w
-        h_scale = oh / h
+        w_scale = ow * 1.0 / w
+        h_scale = oh * 1.0 / h
 
         num = len(kpt)
         length = len(kpt[0])
@@ -61,8 +61,8 @@ def resize(img, mask, kpt, center, size):
 
         return np.ascontiguousarray(cv2.resize(img, (ow, oh))), np.ascontiguousarray(cv2.resize(mask, (ow, oh))), kpt, center
     else:
-        w_scale = size[0] / w
-        h_scale = size[1] / h
+        w_scale = size[0] * 1.0 / w
+        h_scale = size[1] * 1.0 / h
         num = len(kpt)
         length = len(kpt[0])
         for i in range(num):
@@ -212,10 +212,10 @@ class RandomResizedCrop(object):
                 ratio_y = random.uniform(0, 1)
                 x_offset = int((ratio_x - 0.5) * 2 * center_perturb_max)
                 y_offset = int((ratio_y - 0.5) * 2 * center_perturb_max)
-                centerx = min(max(center[0][0] + x_offset - w / 2, w / 2), width - w / 2)
-                centery = min(max(center[0][1] + y_offset - h / 2, h / 2), height - h / 2)
+                centerx = min(max(center[0][0] + x_offset - w / 2., w / 2.), width - w / 2.)
+                centery = min(max(center[0][1] + y_offset - h / 2., h / 2.), height - h / 2.)
                 
-                return int(round(centery - h / 2)), int(round(centerx - w / 2)), h, w
+                return int(round(centery - h / 2.)), int(round(centerx - w / 2.)), h, w
 
         # Fallback
         w = min(width, height)
@@ -325,10 +325,10 @@ class RandomCrop(object):
         ratio_y = random.uniform(0, 1)
         x_offset = int((ratio_x - 0.5) * 2 * center_perturb_max)
         y_offset = int((ratio_y - 0.5) * 2 * center_perturb_max)
-        centerx = min(max(center[0] + x_offset - output_size[0] / 2, output_size[0] / 2), width - output_size[0] / 2)
-        centery = min(max(center[1] + y_offset - output_size[1] / 2, output_size[1] / 2), height - output_size[1] / 2)
+        centerx = min(max(center[0] + x_offset - output_size[0] / 2., output_size[0] / 2.), width - output_size[0] / 2.)
+        centery = min(max(center[1] + y_offset - output_size[1] / 2., output_size[1] / 2.), height - output_size[1] / 2.)
 
-        return centery - output_size[1] / 2, centerx - output_size[0] / 2, output_size[1], output_size[0]
+        return int(round(centery - output_size[1] / 2.)), int(round(centerx - output_size[0] / 2.)), output_size[1], output_size[0]
 
     def __call__(self, img, mask, kpt, center):
         """

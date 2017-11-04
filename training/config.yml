@@ -2,9 +2,9 @@ workers: 6
 weight_decay: 0.0001
 momentum: 0.9
 display: 50
-max_iter: 318300
-batch_size: 10
-test_interval: 1000
+max_iter: 62175
+batch_size: 60
+test_interval: 6000
 topk: 3
 base_lr: 0.00002
 start_iters: 0
@@ -45,7 +45,7 @@ best_model: 12345678.9
 #   stepsize: 5000
 lr_policy: 'multistep-poly'
 policy_parameter:
-  stepvalue: [79575, 159150, 238725]
-  max_iter: 318300
+  stepvalue: [12435, 24870, 37350, 49740]
+  max_iter: 62175
   gamma: 0.333
-  power: 1.5
+  power: 1.2
