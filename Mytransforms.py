@@ -39,7 +39,7 @@ def resize(img, mask, kpt, center, size):
     h, w, _ = img.shape
     if isinstance(size, int):
         if (w <= h and w == size) or (h <= w and h == size):
-            return img, heatmap, mask, kpt, center
+            return img, mask, kpt, center
         if w < h:
             ow = size
             oh = int(size * h * 1.0 / w)
@@ -286,7 +286,6 @@ class RandomRotate(object):
         """
         Args:
             img (numpy.ndarray): Image to be rotated.
-            heatmap (numpy.ndarray): heatmap to be rotated.
             mask (numpy.ndarray): mask to be rotated.
             kpt (list): the key point to be rotated.
 
