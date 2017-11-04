@@ -50,11 +50,42 @@ def construct_model(args):
 
     return model
 
+def get_parameters(model, config, isdefault=True):
+
+    if isdefault:
+        return model.parameters(), [1.]
+    lr_1 = []
+    lr_2 = []
+    lr_4 = []
+    lr_8 = []
+    params_dict = dict(model.module.named_parameters())
+    for key, value in params_dict.items():
+        if 'stage' in key:
+            if 'stage1' in key:
+                if key[-4:] == 'bias':
+                    lr_2.append(value)
+                else:
+                    lr_1.append(value)
+            else:
+                if key[-4:] == 'bias':
+                    lr_8.append(value)
+                else:
+                    lr_4.append(value)
+        elif key[-4:] == 'bias':
+            lr_2.append(value)
+        else:
+            lr_1.append(value)
+    params = [{'params': lr_1, 'lr': config.base_lr},
+            {'params': lr_2, 'lr': config.base_lr * 2.},
+            {'params': lr_4, 'lr': config.base_lr * 4.},
+            {'params': lr_8, 'lr': config.base_lr * 8.}]
+
+    return params, [1., 2., 4., 8.]
+
 def train_val(model, args):
 
     traindir = args.train_dir
     valdir = args.val_dir
-    print traindir, valdir
 
     config = Config(args.config)
     cudnn.benchmark = True
@@ -78,8 +109,10 @@ def train_val(model, args):
                 num_workers=config.workers, pin_memory=True)
     
     criterion = nn.MSELoss().cuda()
+
+    params, multiple = get_parameters(model, config, False)
     
-    optimizer = torch.optim.SGD(model.parameters(), config.base_lr,
+    optimizer = torch.optim.SGD(params, config.base_lr, momentum=config.momentum,
                                 weight_decay=config.weight_decay)
     
     batch_time = AverageMeter()
@@ -99,12 +132,12 @@ def train_val(model, args):
     
         for i, (input, heatmap, vecmap, mask) in enumerate(train_loader):
 
-            learning_rate = adjust_learning_rate(optimizer, iters, config.base_lr, policy=config.lr_policy, policy_parameter=config.policy_parameter)
+            learning_rate = adjust_learning_rate(optimizer, iters, config.base_lr, policy=config.lr_policy, policy_parameter=config.policy_parameter, multiple=multiple)
             data_time.update(time.time() - end)
 
             heatmap = heatmap.cuda(async=True)
             vecmap = vecmap.cuda(async=True)
-            mask = mask.cuda()
+            mask = mask.cuda(async=True)
             input_var = torch.autograd.Variable(input)
             heatmap_var = torch.autograd.Variable(heatmap)
             vecmap_var = torch.autograd.Variable(vecmap)
@@ -126,12 +159,9 @@ def train_val(model, args):
             
             loss = loss1_1 + loss1_2 + loss2_1 + loss2_2 + loss3_1 + loss3_2 + loss4_1 + loss4_2 + loss5_1 + loss5_2 + loss6_1 + loss6_2
 
-            # prec1, preck = accuracy(output.data, label, topk=(1, config.topk))
             losses.update(loss.data[0], input.size(0))
             for cnt, l in enumerate([loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]):
                 losses_list[cnt].update(l.data[0], input.size(0))
-            # top1.update(prec1[0], input.size(0))
-            # topk.update(preck[0], input.size(0))
 
             optimizer.zero_grad()
             loss.backward()
@@ -144,7 +174,7 @@ def train_val(model, args):
             if iters % config.display == 0:
                 print('Train Iteration: {0}\t'
                     'Time {batch_time.sum:.3f}s / {1}iters, ({batch_time.avg:.3f})\t'
-                    'Data load {data_time.sum:.3f}s / 50iters, ({data_time.avg:3f})\n'
+                    'Data load {data_time.sum:.3f}s / {1}iters, ({data_time.avg:3f})\n'
                     'Learning rate = {2}\n'
                     'Loss = {loss.val:.4f} (ave = {loss.avg:.4f})\n'.format(
                     #'Prec@1 = {top1.val:.3f}% (ave = {top1.avg:.3f}%)\t'
@@ -156,13 +186,12 @@ def train_val(model, args):
                     print('Loss{0}_1 = {loss1.val:.4f} (ave = {loss1.avg:.4f})\t'
                         'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(cnt / 2 + 1, cnt / 2 + 1, loss1=losses_list[cnt], loss2=losses_list[cnt + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
+
                 batch_time.reset()
                 data_time.reset()
                 losses.reset()
                 for cnt in range(12):
                     losses_list[cnt].reset()
-                # top1.reset()
-                # topk.reset()
     
             if config.test_interval != 0 and args.val_dir is not None and iters % config.test_interval == 0:
 
@@ -171,7 +200,7 @@ def train_val(model, args):
 
                     heatmap = heatmap.cuda(async=True)
                     vecmap = vecmap.cuda(async=True)
-                    mask = mask.cuda()
+                    mask = mask.cuda(async=True)
                     input_var = torch.autograd.Variable(input, volatile=True)
                     heatmap_var = torch.autograd.Variable(heatmap, volatile=True)
                     vecmap_var = torch.autograd.Variable(vecmap, volatile=True)
@@ -193,12 +222,9 @@ def train_val(model, args):
                     
                     loss = loss1_1 + loss1_2 + loss2_1 + loss2_2 + loss3_1 + loss3_2 + loss4_1 + loss4_2 + loss5_1 + loss5_2 + loss6_1 + loss6_2
 
-                    # prec1, preck = accuracy(output.data, label, topk=(1, config.topk))
                     losses.update(loss.data[0], input.size(0))
                     for cnt, l in enumerate([loss1_1, loss1_2, loss2_1, loss2_2, loss3_1, loss3_2, loss4_1, loss4_2, loss5_1, loss5_2, loss6_1, loss6_2]):
                         losses_list[cnt].update(l.data[0], input.size(0))
-                    # top1.update(prec1[0], input.size(0))
-                    # topk.update(preck[0], input.size(0))
     
                 batch_time.update(time.time() - end)
                 end = time.time()
@@ -224,8 +250,6 @@ def train_val(model, args):
                 losses.reset()
                 for cnt in range(12):
                     losses_list[cnt].reset()
-                # top1.reset()
-                # topk.reset()
                 
                 model.train()
     
