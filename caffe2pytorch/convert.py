@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append('..')
 import pose_estimation
-from BasicTool import save_checkpoint as save_checkpoint
+from utils import save_checkpoint as save_checkpoint
 
 def load_caffe_model(deploy_path, model_path):
 

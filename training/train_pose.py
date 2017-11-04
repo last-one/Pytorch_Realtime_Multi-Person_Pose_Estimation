@@ -9,10 +9,10 @@ import time
 sys.path.append('..')
 import CocoFolder
 import Mytransforms 
-from BasicTool import adjust_learning_rate as adjust_learning_rate
-from BasicTool import AverageMeter as AverageMeter
-from BasicTool import save_checkpoint as save_checkpoint
-from BasicTool import Config as Config
+from utils import adjust_learning_rate as adjust_learning_rate
+from utils import AverageMeter as AverageMeter
+from utils import save_checkpoint as save_checkpoint
+from utils import Config as Config
 import pose_estimation
 
 def parse():
@@ -79,7 +79,7 @@ def train_val(model, args):
     
     criterion = nn.MSELoss().cuda()
     
-    optimizer = torch.optim.Adam(model.parameters(), config.base_lr,
+    optimizer = torch.optim.SGD(model.parameters(), config.base_lr,
                                 weight_decay=config.weight_decay)
     
     batch_time = AverageMeter()

@@ -25,12 +25,10 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-def adjust_learning_rate(optimizer, iters, base_lr, policy_parameter, policy='step'):
+def adjust_learning_rate(optimizer, iters, base_lr, policy_parameter, policy='step', multiple=[1]):
 
     if policy == 'fixed':
         lr = base_lr
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = base_lr
     elif policy == 'step':
         lr = base_lr * (policy_parameter['gamma'] ** (iters // policy_parameter['step_size']))
     elif policy == 'exp':
@@ -61,8 +59,8 @@ def adjust_learning_rate(optimizer, iters, base_lr, policy_parameter, policy='st
                 break
         lr = max(lr * policy_parameter['gamma'], lr * (1 - (iters - stepstart) * 1.0 / (stepend - stepstart)) ** policy_parameter['power'])
 
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+    for i, param_group in enumerate(optimizer.param_groups):
+        param_group['lr'] = lr * multiple[i]
     return lr
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
