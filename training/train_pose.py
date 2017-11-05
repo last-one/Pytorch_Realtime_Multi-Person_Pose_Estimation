@@ -170,15 +170,15 @@ def train_val(model, args):
                     'Time {batch_time.sum:.3f}s / {1}iters, ({batch_time.avg:.3f})\t'
                     'Data load {data_time.sum:.3f}s / {1}iters, ({data_time.avg:3f})\n'
                     'Learning rate = {2}\n'
-                    'Loss = {loss.val:.4f} (ave = {loss.avg:.4f})\n'.format(
+                    'Loss = {loss.val:.8f} (ave = {loss.avg:.8f})\n'.format(
                     #'Prec@1 = {top1.val:.3f}% (ave = {top1.avg:.3f}%)\t'
                     #'Prec@{2} = {topk.val:.3f}% (ave = {topk.avg:.3f}%)\n'.format(
                     iters, config.display, learning_rate, batch_time=batch_time,
                     data_time=data_time, loss=losses))
                     #top1=top1, topk=topk))
                 for cnt in range(0,12,2):
-                    print('Loss{0}_1 = {loss1.val:.4f} (ave = {loss1.avg:.4f})\t'
-                        'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(cnt / 2 + 1, cnt / 2 + 1, loss1=losses_list[cnt], loss2=losses_list[cnt + 1]))
+                    print('Loss{0}_1 = {loss1.val:.8f} (ave = {loss1.avg:.8f})\t'
+                        'Loss{1}_2 = {loss2.val:.8f} (ave = {loss2.avg:.8f})'.format(cnt / 2 + 1, cnt / 2 + 1, loss1=losses_list[cnt], loss2=losses_list[cnt + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
 
                 batch_time.reset()
@@ -231,13 +231,13 @@ def train_val(model, args):
     
                 print(
                     'Test Time {batch_time.sum:.3f}s, ({batch_time.avg:.3f})\t'
-                    'Loss {loss.avg:.4f}\n'.format(
+                    'Loss {loss.avg:.8f}\n'.format(
                     #'Prec@1 {top1.avg:.3f}%\t'
                     #'Prec@{0} {topk.avg:.3f}%\n'.format(
                     batch_time=batch_time, loss=losses))
                 for i in range(0,12,2):
-                    print('Loss{0}_1 = {loss1.val:.4f} (ave = {loss1.avg:.4f})\t'
-                        'Loss{1}_2 = {loss2.val:.4f} (ave = {loss2.avg:.4f})'.format(i / 2 + 1, i / 2 + 1, loss1=losses_list[i], loss2=losses_list[i + 1]))
+                    print('Loss{0}_1 = {loss1.val:.8f} (ave = {loss1.avg:.8f})\t'
+                        'Loss{1}_2 = {loss2.val:.8f} (ave = {loss2.avg:.8f})'.format(i / 2 + 1, i / 2 + 1, loss1=losses_list[i], loss2=losses_list[i + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
     
                 batch_time.reset()
