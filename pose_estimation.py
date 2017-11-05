@@ -33,7 +33,6 @@ class Pose_Estimation(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, 0.01)
                 if m.bias is not None:
                     m.bias.data.zero_()
@@ -132,11 +131,11 @@ def PoseModel(num_point, num_vector, num_stages=6, batch_norm=False, pretrained=
     in_heat = [0, 128, 128, 128, 128, 512, num_point]
     for i in range(1, 6):
         if i < 4:
-            block1[0].append({'conv{}_stage1_vec'.format(1) :[in_vec[i], in_vec[i + 1], 3, 1, 1]})
-            block1[1].append({'conv{}_stage1_heat'.format(1):[in_heat[i], in_heat[i + 1], 3, 1, 1]})
+            block1[0].append({'conv{}_stage1_vec'.format(i) :[in_vec[i], in_vec[i + 1], 3, 1, 1]})
+            block1[1].append({'conv{}_stage1_heat'.format(i):[in_heat[i], in_heat[i + 1], 3, 1, 1]})
         else:
-            block1[0].append({'conv{}_stage1_vec'.format(1):[in_vec[i], in_vec[i + 1], 1, 1, 0]})
-            block1[1].append({'conv{}_stage1_heat'.format(1):[in_heat[i], in_heat[i + 1], 1, 1, 0]})
+            block1[0].append({'conv{}_stage1_vec'.format(i):[in_vec[i], in_vec[i + 1], 1, 1, 0]})
+            block1[1].append({'conv{}_stage1_heat'.format(i):[in_heat[i], in_heat[i + 1], 1, 1, 0]})
     net_dict.append(block1)
 
     in_vec_1 = [0, 128 + num_point + num_vector * 2, 128, 128, 128, 128, 128, 128, num_vector * 2]
