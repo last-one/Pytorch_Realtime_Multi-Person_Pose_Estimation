@@ -145,6 +145,7 @@ class CocoFolder(data.Dataset):
 
         heatmap = np.zeros((height / self.stride, width / self.stride, len(kpt[0]) + 1), dtype=np.float32)
         heatmap = generate_heatmap(heatmap, kpt, self.stride, self.sigma)
+        heatmap[:,:,0] = 1.0 - np.max(heatmap[:,:,1:], axis=2) # for background
         heatmap = heatmap * mask
 
         vecmap = np.zeros((height / self.stride, width / self.stride, len(self.vec_pair[0]) * 2), dtype=np.float32)
