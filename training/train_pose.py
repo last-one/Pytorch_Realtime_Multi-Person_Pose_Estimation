@@ -122,6 +122,9 @@ def train_val(model, args):
     learning_rate = config.base_lr
 
     model.train()
+
+    heat_weight = 46 * 46 * 19 / 2.0
+    vec_weight = 46 * 46 * 38 / 2.0
     while iters < config.max_iter:
     
         for i, (input, heatmap, vecmap, mask) in enumerate(train_loader):
@@ -138,18 +141,18 @@ def train_val(model, args):
             mask_var = torch.autograd.Variable(mask)
 
             vec1, heat1, vec2, heat2, vec3, heat3, vec4, heat4, vec5, heat5, vec6, heat6 = model(input_var, mask_var)
-            loss1_1 = criterion(vec1, vecmap_var)
-            loss1_2 = criterion(heat1, heatmap_var)
-            loss2_1 = criterion(vec2, vecmap_var)
-            loss2_2 = criterion(heat2, heatmap_var)
-            loss3_1 = criterion(vec3, vecmap_var)
-            loss3_2 = criterion(heat3, heatmap_var)
-            loss4_1 = criterion(vec4, vecmap_var)
-            loss4_2 = criterion(heat4, heatmap_var)
-            loss5_1 = criterion(vec5, vecmap_var)
-            loss5_2 = criterion(heat5, heatmap_var)
-            loss6_1 = criterion(vec6, vecmap_var)
-            loss6_2 = criterion(heat6, heatmap_var)
+            loss1_1 = criterion(vec1, vecmap_var) * vec_weight
+            loss1_2 = criterion(heat1, heatmap_var) * heat_weight
+            loss2_1 = criterion(vec2, vecmap_var) * vec_weight
+            loss2_2 = criterion(heat2, heatmap_var) * heat_weight
+            loss3_1 = criterion(vec3, vecmap_var) * vec_weight
+            loss3_2 = criterion(heat3, heatmap_var) * heat_weight
+            loss4_1 = criterion(vec4, vecmap_var) * vec_weight
+            loss4_2 = criterion(heat4, heatmap_var) * heat_weight
+            loss5_1 = criterion(vec5, vecmap_var) * vec_weight
+            loss5_2 = criterion(heat5, heatmap_var) * heat_weight
+            loss6_1 = criterion(vec6, vecmap_var) * vec_weight
+            loss6_2 = criterion(heat6, heatmap_var) * heat_weight
             
             loss = loss1_1 + loss1_2 + loss2_1 + loss2_2 + loss3_1 + loss3_2 + loss4_1 + loss4_2 + loss5_1 + loss5_2 + loss6_1 + loss6_2
 
@@ -253,7 +256,7 @@ def train_val(model, args):
 
 if __name__ == '__main__':
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
     args = parse()
     model = construct_model(args)
     train_val(model, args)
