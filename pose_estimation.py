@@ -49,7 +49,7 @@ class Pose_Estimation(nn.Module):
             one_layer = net_dict[i]
             key = one_layer.keys()[0]
             v = one_layer[key]
-            # print key, v
+
             if 'pool' in key:
                 layers += [nn.MaxPool2d(kernel_size=v[0], stride=v[1], padding=v[2])]
             else:
@@ -63,7 +63,7 @@ class Pose_Estimation(nn.Module):
             one_layer = net_dict[-1]
             key = one_layer.keys()[0]
             v = one_layer[key]
-            # print key, v
+
             conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
             if batch_norm:
                 layers += [conv2d, nn.BatchNorm2d(v[1]), nn.ReLU(inplace=True)]
@@ -73,7 +73,7 @@ class Pose_Estimation(nn.Module):
             one_layer = net_dict[-1]
             key = one_layer.keys()[0]
             v = one_layer[key]
-            # print key, v
+
             conv2d = nn.Conv2d(in_channels=v[0], out_channels=v[1], kernel_size=v[2], stride=v[3], padding=v[4])
             layers += [conv2d]
         return nn.Sequential(*layers)
