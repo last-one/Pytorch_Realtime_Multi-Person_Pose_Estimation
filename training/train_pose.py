@@ -60,17 +60,11 @@ def get_parameters(model, config, isdefault=True):
     lr_8 = []
     params_dict = dict(model.module.named_parameters())
     for key, value in params_dict.items():
-        if 'stage' in key:
-            if 'stage1' in key:
-                if key[-4:] == 'bias':
-                    lr_2.append(value)
-                else:
-                    lr_1.append(value)
+        if ('model1_' not in key) and ('model0.' not in key):
+            if key[-4:] == 'bias':
+                lr_8.append(value)
             else:
-                if key[-4:] == 'bias':
-                    lr_8.append(value)
-                else:
-                    lr_4.append(value)
+                lr_4.append(value)
         elif key[-4:] == 'bias':
             lr_2.append(value)
         else:
@@ -259,7 +253,7 @@ def train_val(model, args):
 
 if __name__ == '__main__':
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
     args = parse()
     model = construct_model(args)
     train_val(model, args)
