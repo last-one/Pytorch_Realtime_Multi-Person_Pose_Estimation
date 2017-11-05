@@ -122,7 +122,8 @@ class CocoFolder(data.Dataset):
         self.kpt_list, self.center_list = read_json_file(file_dir[2])
         self.stride = stride
         self.transformer = transformer
-        self.vec_pair = [[2,3,5,6,8,9,11,12,0,1,1,1,1,2,5,0,0,15,14],[3,4,6,7,9,10,12,13,1,8,11,2,5,16,17,15,14,17,16]] # different from openpose
+        self.vec_pair = [[2,3,5,6,8,9, 11,12,0,1,1, 1,1,2, 5, 0, 0, 14,15],
+                         [3,4,6,7,9,10,12,13,1,8,11,2,5,16,17,14,15,16,17]] # different from openpose
         self.theta = 1.0
         self.sigma = 7.0
 
