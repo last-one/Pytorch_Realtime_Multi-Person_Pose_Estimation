@@ -8,21 +8,25 @@ Code for reproducing CVPR 2017 Oral paper using pytorch
 
 ## Results
 
-TODO
+<div align='center'>
+<img src="https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/testing/ski.jpg", width="300", height="300">
+&nbsp;
+<img src="https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/testing/result.png", width="300", height="300">
+</div>
 
 ## Contents
 1.[preprocessing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/preprocessing): some scripts for preprocessing data.
 
 2.[training](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/training): some scripts for training networks.
 
-3.[testing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/testing): TODO.
+3.[testing](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/testing): the test script and example.
 
 4.[caffe2pytorch](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe2pytorch): the script for converting.
 
 5.[caffe_model](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/caffe_model): caffe model
 
 ## Require
-[Pytorch](http://pytorch.org/)
+[Pytorch](http://pytorch.org/): 0.2.0_3
 
 [Caffe](http://caffe.berkeleyvision.org/): If you want to convert the caffemodel by your own.
 
