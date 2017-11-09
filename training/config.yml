@@ -2,19 +2,19 @@ workers: 6
 weight_decay: 0.0005
 momentum: 0.9
 display: 50
-max_iter: 62175
+max_iter: 53100
 batch_size: 60
-test_interval: 6000
+test_interval: 3000
 topk: 3
-base_lr: 0.00002
+base_lr: 0.00004
 start_iters: 0
 best_model: 12345678.9
 #-------------lr_policy--------------------#
 # step
-#lr_policy: 'step'
-#policy_parameter:
-  #gamma: 0.1
-  #step_size: 30000
+lr_policy: 'step'
+policy_parameter:
+  gamma: 0.333
+  step_size: 13275
 # exp
 # lr_policy: 'exp'
 # policy_parameter:
@@ -43,9 +43,9 @@ best_model: 12345678.9
 # policy_parameter:
 #   gamma: 0.9
 #   stepsize: 5000
-lr_policy: 'multistep-poly'
-policy_parameter:
-  stepvalue: [12435, 24870, 37350, 49740]
-  max_iter: 62175
-  gamma: 0.333
-  power: 1.2
+#lr_policy: 'multistep-poly'
+#policy_parameter:
+  #stepvalue: [12435, 24870, 37350, 49740]
+  #max_iter: 62175
+  #gamma: 0.333
+  #power: 1.2

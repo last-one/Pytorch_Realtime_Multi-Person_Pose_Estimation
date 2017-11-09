@@ -33,19 +33,23 @@ def read_json_file(file_dir):
     data = json.load(fp)
     kpts = []
     centers = []
+    scales = []
 
     for info in data:
         kpt = []
         center = []
+        scale = []
         lists = info['info']
         for x in lists:
            kpt.append(x['keypoints'])
            center.append(x['pos'])
+           scale.append(x['scale'])
         kpts.append(kpt)
         centers.append(center)
+        scales.append(scale)
     fp.close()
 
-    return kpts, centers
+    return kpts, centers, scales
 
 def generate_heatmap(heatmap, kpt, stride, sigma):
 
@@ -119,7 +123,7 @@ class CocoFolder(data.Dataset):
 
         self.img_list = read_data_file(file_dir[0])
         self.mask_list = read_data_file(file_dir[1])
-        self.kpt_list, self.center_list = read_json_file(file_dir[2])
+        self.kpt_list, self.center_list, self.scale_list = read_json_file(file_dir[2])
         self.stride = stride
         self.transformer = transformer
         self.vec_pair = [[2,3,5,6,8,9, 11,12,0,1,1, 1,1,2, 5, 0, 0, 14,15],
@@ -130,6 +134,7 @@ class CocoFolder(data.Dataset):
     def __getitem__(self, index):
 
         img_path = self.img_list[index]
+
         img = np.array(cv2.imread(img_path), dtype=np.float32)
         mask_path = self.mask_list[index]
         mask = np.load(mask_path)
@@ -137,8 +142,9 @@ class CocoFolder(data.Dataset):
 
         kpt = self.kpt_list[index]
         center = self.center_list[index]
+        scale = self.scale_list[index]
 
-        img, mask, kpt, center = self.transformer(img, mask, kpt, center)
+        img, mask, kpt, center = self.transformer(img, mask, kpt, center, scale)
 
         height, width, _ = img.shape
 

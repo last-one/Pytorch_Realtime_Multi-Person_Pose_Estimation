@@ -86,8 +86,9 @@ def train_val(model, args):
     
     train_loader = torch.utils.data.DataLoader(
             CocoFolder.CocoFolder(traindir, 8,
-                Mytransforms.Compose([Mytransforms.RandomRotate(40),
-                Mytransforms.RandomResizedCrop(368, 40),
+                Mytransforms.Compose([Mytransforms.RandomResized(),
+                Mytransforms.RandomRotate(40),
+                Mytransforms.RandomCrop(368),
                 Mytransforms.RandomHorizontalFlip(),
             ])),
             batch_size=config.batch_size, shuffle=True,
@@ -96,8 +97,7 @@ def train_val(model, args):
     if config.test_interval != 0 and args.val_dir is not None:
         val_loader = torch.utils.data.DataLoader(
                 CocoFolder.CocoFolder(valdir, 8,
-                    Mytransforms.Compose([Mytransforms.Resize(400),
-                    Mytransforms.CenterCrop(368),
+                    Mytransforms.Compose([Mytransforms.TestResized(368),
                 ])),
                 batch_size=config.batch_size, shuffle=False,
                 num_workers=config.workers, pin_memory=True)
@@ -123,8 +123,9 @@ def train_val(model, args):
 
     model.train()
 
-    heat_weight = 46 * 46 * 19 / 2.0
+    heat_weight = 46 * 46 * 19 / 2.0 # for convenient to compare with origin code
     vec_weight = 46 * 46 * 38 / 2.0
+
     while iters < config.max_iter:
     
         for i, (input, heatmap, vecmap, mask) in enumerate(train_loader):
@@ -174,11 +175,8 @@ def train_val(model, args):
                     'Data load {data_time.sum:.3f}s / {1}iters, ({data_time.avg:3f})\n'
                     'Learning rate = {2}\n'
                     'Loss = {loss.val:.8f} (ave = {loss.avg:.8f})\n'.format(
-                    #'Prec@1 = {top1.val:.3f}% (ave = {top1.avg:.3f}%)\t'
-                    #'Prec@{2} = {topk.val:.3f}% (ave = {topk.avg:.3f}%)\n'.format(
                     iters, config.display, learning_rate, batch_time=batch_time,
                     data_time=data_time, loss=losses))
-                    #top1=top1, topk=topk))
                 for cnt in range(0,12,2):
                     print('Loss{0}_1 = {loss1.val:.8f} (ave = {loss1.avg:.8f})\t'
                         'Loss{1}_2 = {loss2.val:.8f} (ave = {loss2.avg:.8f})'.format(cnt / 2 + 1, cnt / 2 + 1, loss1=losses_list[cnt], loss2=losses_list[cnt + 1]))
@@ -204,18 +202,18 @@ def train_val(model, args):
                     mask_var = torch.autograd.Variable(mask, volatile=True)
 
                     vec1, heat1, vec2, heat2, vec3, heat3, vec4, heat4, vec5, heat5, vec6, heat6 = model(input_var, mask_var)
-                    loss1_1 = criterion(vec1, vecmap_var)
-                    loss1_2 = criterion(heat1, heatmap_var)
-                    loss2_1 = criterion(vec2, vecmap_var)
-                    loss2_2 = criterion(heat2, heatmap_var)
-                    loss3_1 = criterion(vec3, vecmap_var)
-                    loss3_2 = criterion(heat3, heatmap_var)
-                    loss4_1 = criterion(vec4, vecmap_var)
-                    loss4_2 = criterion(heat4, heatmap_var)
-                    loss5_1 = criterion(vec5, vecmap_var)
-                    loss5_2 = criterion(heat5, heatmap_var)
-                    loss6_1 = criterion(vec6, vecmap_var)
-                    loss6_2 = criterion(heat6, heatmap_var)
+                    loss1_1 = criterion(vec1, vecmap_var) * vec_weight
+                    loss1_2 = criterion(heat1, heatmap_var) * heat_weight
+                    loss2_1 = criterion(vec2, vecmap_var) * vec_weight
+                    loss2_2 = criterion(heat2, heatmap_var) * heat_weight
+                    loss3_1 = criterion(vec3, vecmap_var) * vec_weight
+                    loss3_2 = criterion(heat3, heatmap_var) * heat_weight
+                    loss4_1 = criterion(vec4, vecmap_var) * vec_weight
+                    loss4_2 = criterion(heat4, heatmap_var) * heat_weight
+                    loss5_1 = criterion(vec5, vecmap_var) * vec_weight
+                    loss5_2 = criterion(heat5, heatmap_var) * heat_weight
+                    loss6_1 = criterion(vec6, vecmap_var) * vec_weight
+                    loss6_2 = criterion(heat6, heatmap_var) * heat_weight
                     
                     loss = loss1_1 + loss1_2 + loss2_1 + loss2_2 + loss3_1 + loss3_2 + loss4_1 + loss4_2 + loss5_1 + loss5_2 + loss6_1 + loss6_2
 
@@ -235,12 +233,10 @@ def train_val(model, args):
                 print(
                     'Test Time {batch_time.sum:.3f}s, ({batch_time.avg:.3f})\t'
                     'Loss {loss.avg:.8f}\n'.format(
-                    #'Prec@1 {top1.avg:.3f}%\t'
-                    #'Prec@{0} {topk.avg:.3f}%\n'.format(
                     batch_time=batch_time, loss=losses))
-                for i in range(0,12,2):
+                for cnt in range(0,12,2):
                     print('Loss{0}_1 = {loss1.val:.8f} (ave = {loss1.avg:.8f})\t'
-                        'Loss{1}_2 = {loss2.val:.8f} (ave = {loss2.avg:.8f})'.format(i / 2 + 1, i / 2 + 1, loss1=losses_list[i], loss2=losses_list[i + 1]))
+                        'Loss{1}_2 = {loss2.val:.8f} (ave = {loss2.avg:.8f})'.format(cnt / 2 + 1, cnt / 2 + 1, loss1=losses_list[cnt], loss2=losses_list[cnt + 1]))
                 print time.strftime('%Y-%m-%d %H:%M:%S -----------------------------------------------------------------------------------------------------------------\n', time.localtime())
     
                 batch_time.reset()
