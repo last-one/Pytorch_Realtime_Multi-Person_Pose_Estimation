@@ -37,6 +37,7 @@ for i, img_id in enumerate(ids):
 
         # person center
         person_center = [img_anns[p]['bbox'][0] + img_anns[p]['bbox'][2] / 2.0, img_anns[p]['bbox'][1] + img_anns[p]['bbox'][3] / 2.0]
+        scale = img_anns[p]['bbox'][3] / 368.0
 
         # skip this person if the distance to exiting person is too small
         flag = 0
@@ -49,6 +50,7 @@ for i, img_id in enumerate(ids):
             continue
         dic['objpos'] = person_center
         dic['keypoints'] = np.zeros((17, 3)).tolist()
+        dic['scale'] = scale
         for part in range(17):
             dic['keypoints'][part][0] = kpt[part * 3]
             dic['keypoints'][part][1] = kpt[part * 3 + 1]
@@ -73,6 +75,7 @@ for i, img_id in enumerate(ids):
             dic = dict()
             dic['pos'] = person['objpos']
             dic['keypoints'] = np.zeros((18,3)).tolist()
+            dic['scale'] = person['scale']
             for i in range(17):
                 dic['keypoints'][COCO_TO_OURS[i]][0] = person['keypoints'][i][0]
                 dic['keypoints'][COCO_TO_OURS[i]][1] = person['keypoints'][i][1]
