@@ -41,6 +41,7 @@ def construct_model(args):
     state_dict.update(new_state_dict)
     model.load_state_dict(state_dict)
     model = model.cuda()
+    model.eval()
 
     return model
 
