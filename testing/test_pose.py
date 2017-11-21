@@ -184,10 +184,10 @@ def process(model, input_path):
                     criterion1 = len(np.nonzero(score_midpts > thre_line)[0]) > 0.8 * len(score_midpts)
                     criterion2 = score_with_dist_prior > 0
                     if criterion1 and criterion2:
-                        connection_candidate.append([i, j, score_with_dist_prior, score_with_dist_prior + candA[i][2], candB[j][2]])
+                        connection_candidate.append([i, j, score_with_dist_prior, score_with_dist_prior + candA[i][2] + candB[j][2]])
 
             # sort the possible line from large to small order.
-            connection_candidate = sorted(connection_candidate, key=lambda x: x[2], reverse=True)
+            connection_candidate = sorted(connection_candidate, key=lambda x: x[3], reverse=True) # different from openpose, I think there should be sorted by x[3]
             connection = np.zeros((0, 5))
 
             for c in range(len(connection_candidate)):
