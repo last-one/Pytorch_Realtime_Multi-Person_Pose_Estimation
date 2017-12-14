@@ -9,19 +9,32 @@ import argparse
 COCO_TO_OURS = [0, 15, 14, 17, 16, 5, 2, 6, 3, 7, 4, 11, 8, 12, 9, 13, 10]
 
 def parse():
+    """
+    ann_path is the path of COCO annotations.
 
+    all of the remainder parameters are the save path for these generated files.
+
+    json_path(.json) is the save_path for the generated json file, which contains the information required for training.
+
+    mask_dir is the save_path for the generated mask files(.npy). COCO has the information. If you use yourself dataset, you don't need mask files.
+
+    filelist_path(.txt) is the save_path for the generated filelist, which saves all of the absolute path of images.
+
+    masklist_path(.txt) is the save_path for the generated masklist, which saves all of the absolute path of the generated mask files.
+
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--ann_path', type=str,
                         dest='ann_path', help='the path of annotations')
     parser.add_argument('--json_path', type=str,
-                        dest='json_path', help='the path of generated json file')
+                        dest='json_path', help='the save_path for the generated json file')
     parser.add_argument('--mask_dir', type=str,
-                        dest='mask_dir', help='the sve_dir of generated mask files')
+                        dest='mask_dir', help='the save_dir for the generated mask files')
     parser.add_argument('--filelist_path', type=str,
-                        dest='filelist_path', help='the path of generated filelist')
+                        dest='filelist_path', help='the save_path for the generated filelist')
     parser.add_argument('--masklist_path', type=str,
-                        dest='masklist_path', help='the path of generated masklist')
+                        dest='masklist_path', help='the save_path for the generated masklist')
 
     return parser.parse_args()
 
