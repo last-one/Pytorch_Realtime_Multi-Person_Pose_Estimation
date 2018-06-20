@@ -105,4 +105,4 @@ Please cite the paper in your publocations if it helps your research:
 		}
 
 ## License
-The repo is freely available for free non-commercial use. Please see the [license][https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/LICENSE.md] for further details.
+The repo is freely available for free non-commercial use. Please see the [license](https://github.com/last-one/pytorch_realtime_multi-person_pose_estimation/blob/master/LICENSE.md) for further details.
